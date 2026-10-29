@@ -109,8 +109,9 @@ export class SiteStack extends Stack {
       alerts.grantPublish(fn);
       fn.addToRolePolicy(
         new iam.PolicyStatement({
-          actions: ['ssm:GetParametersByPath'],
-          resources: [this.formatArn({ service: 'ssm', resource: 'parameter', resourceName: prefix.replace(/^\/|\/$/g, '') })],
+          // Reading a path needs access to the path itself and to the parameters under it.
+          actions: ['ssm:GetParametersByPath', 'ssm:GetParameters', 'ssm:GetParameter'],
+          resources: ['', '/*'].map((tail) => this.formatArn({ service: 'ssm', resource: 'parameter', resourceName: prefix.replace(/^\/|\/$/g, '') + tail })),
         }),
       );
     }

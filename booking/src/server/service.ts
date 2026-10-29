@@ -34,7 +34,8 @@ export interface HomeConfig {
 }
 
 export interface Secrets {
-  stripeWebhookSecret: string;
+  /** Missing until Stripe is set up. Every webhook is refused while it is. */
+  stripeWebhookSecret?: string;
   quoteSecret: string;
   /** Signs the private export calendar links given to Airbnb and VRBO. */
   exportSecret: string;
@@ -208,7 +209,10 @@ export class BookingService {
   }
 
   async stripeWebhook(rawBody: string, signature: string | undefined): Promise<ApiResult<{ received: boolean; error?: string }>> {
-    if (!verifyStripeSignature(rawBody, signature, this.deps.secrets.stripeWebhookSecret, this.now())) {
+    const secret = this.deps.secrets.stripeWebhookSecret;
+    // Never check a signature against an empty secret: anyone could forge one.
+    if (!secret) return { status: 503, body: { received: false, error: 'payments-not-configured' } };
+    if (!verifyStripeSignature(rawBody, signature, secret, this.now())) {
       return { status: 400, body: { received: false, error: 'bad-signature' } };
     }
     const event = readCheckoutEvent(JSON.parse(rawBody));
