@@ -1,0 +1,11 @@
+{
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/about/page": "app/about/page.js",
+  "/cities/[city]/page": "app/cities/[city]/page.js",
+  "/contact/page": "app/contact/page.js",
+  "/homes/[slug]/page": "app/homes/[slug]/page.js",
+  "/homes/page": "app/homes/page.js",
+  "/page": "app/page.js",
+  "/policies/page": "app/policies/page.js"
+}

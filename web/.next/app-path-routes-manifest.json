@@ -1,0 +1,11 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/about/page": "/about",
+  "/cities/[city]/page": "/cities/[city]",
+  "/contact/page": "/contact",
+  "/homes/[slug]/page": "/homes/[slug]",
+  "/homes/page": "/homes",
+  "/page": "/",
+  "/policies/page": "/policies"
+}
