@@ -1,0 +1,5 @@
+node_modules/
+out/
+.env
+*.local.ics
+.DS_Store
