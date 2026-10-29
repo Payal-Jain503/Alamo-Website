@@ -35,7 +35,9 @@ new SiteStack(app, 'AlamoWebsite', {
 new GithubDeployStack(app, 'AlamoWebsiteGithubDeploy', {
   env,
   description: 'Lets GitHub Actions deploy Alamo City Rental without stored keys',
-  repository: 'Payal-Jain503/Alamo-Website',
+  // GitHub names runs by owner and repository *with their numeric ids* (see the `sub` claim in a run's OIDC token),
+  // so renaming or re-creating the repository can't inherit this role.
+  repository: 'Payal-Jain503@292356610/Alamo-Website@1438172597',
   branch: 'main',
   existingProviderArn: ctx('githubProviderArn'),
 });
