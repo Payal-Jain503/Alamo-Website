@@ -1,0 +1,24 @@
+{
+  "name": "alamo-booking",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Booking engine for Alamo City Rental: iCal sync with Airbnb and VRBO",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "check-calendar": "tsx src/cli.ts",
+    "test": "node --import tsx --test test/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "ical-generator": "11.1.2",
+    "node-ical": "0.27.3"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.3",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3"
+  }
+}

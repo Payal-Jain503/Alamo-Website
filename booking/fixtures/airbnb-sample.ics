@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+PRODID;X-RICAL-TZSOURCE=TZINFO:-//Airbnb Inc//Hosting Calendar 1.0//EN
+CALSCALE:GREGORIAN
+VERSION:2.0
+BEGIN:VEVENT
+DTEND;VALUE=DATE:20261106
+DTSTART;VALUE=DATE:20261102
+UID:1418fb94e984-0f6a2c1d9b3e7a5f8c4d2e1b0a9f8e7d@airbnb.com
+DESCRIPTION:Reservation URL: https://www.airbnb.com/hosting/reservations/details/HMSAMPLE01\nPhone Number (Last 4 Digits): 0000
+SUMMARY:Reserved
+END:VEVENT
+BEGIN:VEVENT
+DTEND;VALUE=DATE:20261113
+DTSTART;VALUE=DATE:20261109
+UID:1418fb94e984-1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d@airbnb.com
+SUMMARY:Airbnb (Not available)
+END:VEVENT
+BEGIN:VEVENT
+DTEND;VALUE=DATE:20261129
+DTSTART;VALUE=DATE:20261125
+UID:1418fb94e984-2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e@airbnb.com
+DESCRIPTION:Reservation URL: https://www.airbnb.com/hosting/reservations/details/HMSAMPLE02\nPhone Number (Last 4 Digits): 0000
+SUMMARY:Reserved
+END:VEVENT
+BEGIN:VEVENT
+DTEND;VALUE=DATE:20261220
+DTSTART;VALUE=DATE:20261218
+UID:1418fb94e984-3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f@airbnb.com
+DESCRIPTION:Reservation URL: https://www.airbnb.com/hosting/reservations/details/HMSAMPLE03\nPhone Number (Last 4 Digits): 0000
+SUMMARY:Reserved
+END:VEVENT
+BEGIN:VEVENT
+DTEND;VALUE=DATE:20270102
+DTSTART;VALUE=DATE:20261228
+UID:1418fb94e984-4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a@airbnb.com
+DESCRIPTION:Reservation URL: https://www.airbnb.com/hosting/reservations/details/HMSAMPLE04\nPhone Number (Last 4 Digits): 0000
+SUMMARY:Reserved
+END:VEVENT
+END:VCALENDAR
