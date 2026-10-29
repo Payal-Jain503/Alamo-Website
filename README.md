@@ -5,7 +5,8 @@ Austin and Houston.
 
 | Folder | What it is |
 | --- | --- |
+| `web/` | The website (Next.js, static export for S3 + CloudFront) |
 | `booking/` | Booking engine: Airbnb and VRBO calendar sync (iCal), availability, export calendars |
 
-Coming next: the website (`web/`), pricing, holds and Stripe payments, and the
+Coming next: pricing, holds and Stripe payments, and the
 AWS infrastructure (`infra/`).
