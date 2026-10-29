@@ -1,7 +1,7 @@
 # Alamo City Rental booking engine
 
-Calendar sync with Airbnb and VRBO over iCal. This is the first piece of the
-direct-booking website; pricing, holds and Stripe payments come next.
+Calendar sync with Airbnb and VRBO over iCal, plus pricing and quotes for the
+direct-booking website. Date holds and Stripe payments come next.
 
 ## What it does
 
@@ -20,6 +20,27 @@ direct-booking website; pricing, holds and Stripe payments come next.
 
 Dates are calendar days in the home's time zone (America/Chicago). A block runs
 from the first night to the check-out day, and check-out day stays bookable.
+
+## Pricing and quotes
+
+`quoteStay(plan, stay, blocks, today)` prices a stay and checks every booking
+rule. Money is in whole US cents.
+
+- **Nightly price:** a home's base rate, a Friday and Saturday rate, seasons
+  (later ones win), then prices synced from PriceLabs, which win over everything.
+- **Minimum stay** comes from the arrival night, the way Airbnb and PriceLabs apply it.
+- **Fees:** cleaning, pets (once per stay) and extra guests above the included
+  number (per guest per night), each on its own line.
+- **Lodging taxes:** any number of tax lines, each with its rate and the charges
+  it applies to. Rates are confirmed with the client's accountant; the tests use
+  example rates.
+- **Rules:** dates, notice before check-in, how far ahead, longest stay,
+  check-in and check-out days, guest limit, pets and availability. Each failure
+  comes back with a reason a guest can read.
+
+`signQuote` and `verifyQuote` put an HMAC signature and a 30-minute expiry on a
+quote, so the price and dates can't be edited between the quote and checkout.
+Checkout still re-checks availability and re-prices before taking payment.
 
 ## Check one home
 
@@ -41,7 +62,7 @@ VRBO exports, including one deliberate double booking on 19 Dec 2026.
 ## Tests
 
 ```sh
-npm test        # 32 tests, Node's built-in runner
+npm test        # 47 tests, Node's built-in runner
 npm run typecheck
 ```
 
@@ -54,6 +75,8 @@ npm run typecheck
 | `src/sync.ts` | Applies each read to the stored state of a feed |
 | `src/availability.ts` | Night-by-night availability, stay checks, double-booking detection |
 | `src/exportFeed.ts` | Our export calendar for Airbnb and VRBO |
+| `src/pricing.ts` | Rate plans, fees, taxes and booking rules |
+| `src/signedQuote.ts` | Signed, expiring quotes for checkout |
 | `src/preview.ts`, `src/cli.ts` | The calendar check tool |
 
 `sync.ts` and the other modules have no AWS code yet, so they can run unchanged
