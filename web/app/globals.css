@@ -305,6 +305,35 @@ textarea { border: 1px solid var(--line); padding: 10px 12px; resize: vertical; 
 .panel-phone a { color: var(--brass-deep); }
 @media (max-width: 960px) { .booking-panel, .contact-card { position: static; } }
 
+/* Live booking */
+.live-booking, .guest-form, .pay-form { display: grid; gap: 18px; }
+.stay-calendar { display: grid; gap: 10px; }
+.cal-head { display: flex; align-items: center; justify-content: space-between; }
+.cal-head p { margin: 0; font-family: var(--display); font-size: 18px; }
+.cal-head button { background: none; border: 1px solid var(--line); width: 34px; height: 34px; font-size: 20px; line-height: 1; color: var(--ink); cursor: pointer; }
+.cal-head button:disabled { opacity: .35; cursor: default; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.cal-dow { text-align: center; font-size: 11.5px; letter-spacing: .12em; color: var(--muted); padding: 4px 0; }
+.cal-day { aspect-ratio: 1; border: 0; background: var(--paper); color: var(--ink); font: 400 14px/1 var(--body); cursor: pointer; padding: 0; }
+.cal-day:hover:not(:disabled) { background: var(--paper-2); }
+.cal-day:disabled { color: #b4b0a6; cursor: default; background: transparent; }
+.cal-day.booked { text-decoration: line-through; }
+.cal-day.in-range { background: #eadfcb; }
+.cal-day.selected { background: var(--brass); color: var(--white); }
+.cal-hint { margin: 0; display: flex; justify-content: space-between; gap: 12px; }
+.cal-clear { background: none; border: 0; padding: 0; color: var(--brass-deep); font: inherit; text-decoration: underline; cursor: pointer; }
+.price-lines { margin: 0; display: grid; gap: 8px; font-size: 15px; }
+.price-lines div { display: flex; justify-content: space-between; gap: 16px; }
+.price-lines dt { color: var(--ink-soft); }
+.price-lines dd { margin: 0; font-variant-numeric: tabular-nums; }
+.price-total { border-top: 1px solid var(--line); padding-top: 10px; font-weight: 500; font-size: 17px; }
+.price-total dt { color: var(--ink); }
+.pay-form .text-link { background: none; border-left: 0; border-right: 0; border-top: 0; justify-self: start; cursor: pointer; }
+.booking-result { display: grid; gap: 12px; }
+.booking-result p { margin: 0; }
+.result-title { font-family: var(--display); font-size: 22px; }
+.btn:disabled { opacity: .5; cursor: default; }
+
 /* City hero */
 .city-hero { position: relative; height: min(62vh, 560px); min-height: 380px; color: var(--white); overflow: hidden; background: var(--night); }
 .city-hero > .photo { position: absolute; inset: 0; }
