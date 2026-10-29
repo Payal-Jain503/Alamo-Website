@@ -1,0 +1,32 @@
+name: infra
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - 'infra/**'
+      - 'booking/**'
+      - '.github/workflows/infra.yml'
+
+jobs:
+  synth:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            booking/package-lock.json
+            infra/package-lock.json
+      # The Lambda bundle is built from booking/, so its packages are needed too.
+      - run: npm ci
+        working-directory: booking
+      - run: npm ci
+        working-directory: infra
+      - run: npm run typecheck
+        working-directory: infra
+      - run: npm run synth
+        working-directory: infra
