@@ -48,7 +48,8 @@ There is no API Gateway, NAT gateway or always-on server.
    This prints `DeployRoleArn`. It only lets the `main` branch of
    Payal-Jain503/Alamo-Website deploy.
 4. **GitHub repository variables** (Settings → Secrets and variables → Actions →
-   Variables): `AWS_DEPLOY_ROLE_ARN`, `OWNER_EMAIL`, and later `DOMAIN_NAMES` and
+   Variables): `AWS_DEPLOY_ROLE_ARN`, `OWNER_EMAIL`, `STRIPE_PUBLISHABLE_KEY`
+   (`pk_test_…`, which turns on online booking), and later `DOMAIN_NAMES` and
    `CERTIFICATE_ARN`. Every merge to `main` then deploys.
 5. **Confirm the SNS email** AWS sends to `OWNER_EMAIL`.
 6. **Stripe webhook** (Developers → Webhooks) to the `StripeWebhookUrl` output,
