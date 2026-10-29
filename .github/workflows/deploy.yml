@@ -52,7 +52,7 @@ jobs:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: us-east-1
+          aws-region: ${{ vars.AWS_REGION || 'ap-south-1' }}
 
       - name: Deploy
         working-directory: infra
@@ -61,4 +61,5 @@ jobs:
           npx cdk deploy AlamoWebsite --require-approval never \
             -c ownerEmail="${{ vars.OWNER_EMAIL }}" \
             -c domainNames="${{ vars.DOMAIN_NAMES }}" \
-            -c certificateArn="${{ vars.CERTIFICATE_ARN }}"
+            -c certificateArn="${{ vars.CERTIFICATE_ARN }}" \
+            -c region="${{ vars.AWS_REGION }}"

@@ -31,7 +31,7 @@ same team looks after.
 ## One-time setup (account owner)
 
 1. **AWS account** in the client's name, with billing alerts on.
-2. **Secrets** in Parameter Store, region us-east-1. Use *SecureString* for all
+2. **Secrets** in Parameter Store, region ap-south-1 (Mumbai, or whatever `region` is set to). Use *SecureString* for all
    of these except `origin-secret`, which CloudFront reads as a plain *String*:
 
    | Name | Value |
@@ -51,7 +51,7 @@ same team looks after.
 
    ```sh
    cd booking && npm ci && cd ../infra && npm ci
-   npx cdk bootstrap aws://<account-id>/us-east-1
+   npx cdk bootstrap aws://<account-id>/ap-south-1
    npx cdk deploy AlamoWebsiteGithubDeploy
    ```
 

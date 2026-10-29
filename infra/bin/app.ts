@@ -8,7 +8,8 @@ import { SiteStack } from '../lib/site-stack.js';
  *
  *   ownerEmail       where booking emails and alerts go (required to deploy)
  *   domainNames      comma separated, for example alamocityrental.com,www.alamocityrental.com
- *   certificateArn   ACM certificate in us-east-1 for those names
+ *   certificateArn   ACM certificate in us-east-1 for those names (CloudFront needs it there)
+ *   region           where the site's own resources live, defaults to ap-south-1
  *   parameterPrefix  defaults to /alamo-web/
  *   githubProviderArn  only if the account already has GitHub's OIDC provider
  */
@@ -18,8 +19,9 @@ const ctx = (name: string) => {
   return typeof v === 'string' && v.trim() ? v.trim() : undefined;
 };
 
-// Everything runs in us-east-1: CloudFront certificates must live there, and one region keeps it simple.
-const env = { account: process.env.CDK_DEFAULT_ACCOUNT, region: 'us-east-1' };
+// The client's AWS organisation blocks most services in us-east-1 and us-west-2 (only global ones such as
+// CloudFront, IAM and ACM work there), so the site runs in Mumbai. CloudFront itself is global.
+const env = { account: process.env.CDK_DEFAULT_ACCOUNT, region: ctx('region') ?? 'ap-south-1' };
 
 new SiteStack(app, 'AlamoWebsite', {
   env,
