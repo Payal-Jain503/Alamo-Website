@@ -10,15 +10,15 @@ import { DynamoFeedStore, DynamoHoldRepository, DynamoNightStore } from './table
 
 /**
  * Builds the booking service from the Lambda environment. Secrets live in
- * Parameter Store as SecureStrings under one prefix (default /alamo/):
+ * Parameter Store as SecureStrings under one prefix (default /alamo-web/):
  *
- *   /alamo/stripe/secret-key        sk_live_… or sk_test_…
- *   /alamo/stripe/webhook-secret    whsec_…
- *   /alamo/quote-secret             32+ random characters
- *   /alamo/export-secret            32+ random characters
- *   /alamo/origin-secret            32+ random characters, also set on CloudFront
- *   /alamo/ical/<home-id>/airbnb    the home's Airbnb iCal link
- *   /alamo/ical/<home-id>/vrbo      the home's VRBO iCal link
+ *   /alamo-web/stripe/secret-key        sk_live_… or sk_test_…
+ *   /alamo-web/stripe/webhook-secret    whsec_…
+ *   /alamo-web/quote-secret             32+ random characters
+ *   /alamo-web/export-secret            32+ random characters
+ *   /alamo-web/origin-secret            32+ random characters, also set on CloudFront
+ *   /alamo-web/ical/<home-id>/airbnb    the home's Airbnb iCal link
+ *   /alamo-web/ical/<home-id>/vrbo      the home's VRBO iCal link
  *
  * They are read once per cold start and cached for 5 minutes.
  */
@@ -60,7 +60,7 @@ async function readParameters(ssm: SSMClient, prefix: string): Promise<Map<strin
 
 async function build(): Promise<Runtime> {
   const table = env('TABLE_NAME');
-  const prefix = (process.env.PARAMETER_PREFIX ?? '/alamo/').replace(/\/?$/, '/');
+  const prefix = (process.env.PARAMETER_PREFIX ?? '/alamo-web/').replace(/\/?$/, '/');
   const params = await readParameters(new SSMClient({}), prefix);
   const need = (name: string) => {
     const v = params.get(name);

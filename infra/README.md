@@ -18,6 +18,16 @@ then on without any stored AWS keys.
 
 There is no API Gateway, NAT gateway or always-on server.
 
+## Sharing an account
+
+Every name here is specific to the website (stacks `AlamoWebsite` and
+`AlamoWebsiteGithubDeploy`, parameters under `/alamo-web/`, the role
+`alamo-website-github-deploy`), so it can live in an account that already runs
+something else, such as the Alamo City browser extension. The account's
+existing CDK bootstrap is reused. The deploy role can use that bootstrap, which
+can change anything in the account, so only share an account with projects the
+same team looks after.
+
 ## One-time setup (account owner)
 
 1. **AWS account** in the client's name, with billing alerts on.
@@ -26,13 +36,13 @@ There is no API Gateway, NAT gateway or always-on server.
 
    | Name | Value |
    | --- | --- |
-   | `/alamo/stripe/secret-key` | Stripe secret key (`sk_test_…` first, `sk_live_…` at launch) |
-   | `/alamo/stripe/webhook-secret` | From the Stripe webhook below (`whsec_…`) |
-   | `/alamo/quote-secret` | 40+ random characters |
-   | `/alamo/export-secret` | 40+ random characters |
-   | `/alamo/origin-secret` (String) | 40+ random characters |
-   | `/alamo/ical/<home-id>/airbnb` | That home's Airbnb iCal link |
-   | `/alamo/ical/<home-id>/vrbo` | That home's VRBO iCal link |
+   | `/alamo-web/stripe/secret-key` | Stripe secret key (`sk_test_…` first, `sk_live_…` at launch) |
+   | `/alamo-web/stripe/webhook-secret` | From the Stripe webhook below (`whsec_…`) |
+   | `/alamo-web/quote-secret` | 40+ random characters |
+   | `/alamo-web/export-secret` | 40+ random characters |
+   | `/alamo-web/origin-secret` (String) | 40+ random characters |
+   | `/alamo-web/ical/<home-id>/airbnb` | That home's Airbnb iCal link |
+   | `/alamo-web/ical/<home-id>/vrbo` | That home's VRBO iCal link |
 
    `openssl rand -hex 24` makes a good random value. A home with a missing iCal
    link can't be booked online, on purpose.
@@ -42,7 +52,7 @@ There is no API Gateway, NAT gateway or always-on server.
    ```sh
    cd booking && npm ci && cd ../infra && npm ci
    npx cdk bootstrap aws://<account-id>/us-east-1
-   npx cdk deploy AlamoGithubDeploy
+   npx cdk deploy AlamoWebsiteGithubDeploy
    ```
 
    This prints `DeployRoleArn`. It only lets the `main` branch of

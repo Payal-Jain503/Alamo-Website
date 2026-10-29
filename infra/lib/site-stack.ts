@@ -28,7 +28,7 @@ const ORIGIN_HEADER = 'x-alamo-origin';
 export interface SiteStackProps extends StackProps {
   /** Where booking emails and calendar alerts go. */
   ownerEmail: string;
-  /** Parameter Store prefix for the secrets, for example /alamo/. */
+  /** Parameter Store prefix for the secrets, for example /alamo-web/. */
   parameterPrefix: string;
   /** For example ['alamocityrental.com', 'www.alamocityrental.com']. Leave out to use the CloudFront address. */
   domainNames?: string[];

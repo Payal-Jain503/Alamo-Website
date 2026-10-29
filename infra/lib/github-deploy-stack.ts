@@ -26,7 +26,7 @@ export class GithubDeployStack extends Stack {
       new iam.OidcProviderNative(this, 'GithubOidc', { url: `https://${issuer}`, clientIds: ['sts.amazonaws.com'] }).oidcProviderArn;
 
     const role = new iam.Role(this, 'DeployRole', {
-      roleName: 'alamo-github-deploy',
+      roleName: 'alamo-website-github-deploy',
       description: `GitHub Actions deploys from ${props.repository} (${props.branch} only)`,
       assumedBy: new iam.WebIdentityPrincipal(providerArn, {
         StringEquals: {

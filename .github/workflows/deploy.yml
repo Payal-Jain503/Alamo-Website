@@ -58,7 +58,7 @@ jobs:
         working-directory: infra
         run: |
           npm ci
-          npx cdk deploy AlamoSite --require-approval never \
+          npx cdk deploy AlamoWebsite --require-approval never \
             -c ownerEmail="${{ vars.OWNER_EMAIL }}" \
             -c domainNames="${{ vars.DOMAIN_NAMES }}" \
             -c certificateArn="${{ vars.CERTIFICATE_ARN }}"
