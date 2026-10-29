@@ -150,6 +150,7 @@ export function quoteStay(plan: RatePlan, stay: StayRequest, blocks: Block[], to
   if (!Number.isInteger(stay.guests) || stay.guests < 1) return fail('too-many-guests', 'Enter the number of guests.');
 
   const pets = stay.pets ?? 0;
+  if (!Number.isInteger(pets) || pets < 0) return fail('no-pets', 'Enter the number of pets.');
   const notice = daysBetween(today, stay.checkIn);
   if (notice < plan.minNoticeDays) {
     return fail(

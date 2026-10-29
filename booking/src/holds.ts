@@ -22,6 +22,13 @@ export interface NightStore {
   /** Frees the nights of a hold or booking. Nights owned by anything else are left alone. */
   release(homeId: string, checkIn: string, checkOut: string, holdId: string): Promise<void>;
   get(homeId: string, night: string): Promise<NightLock | undefined>;
+  /** Every lock from the night `from` up to, not including, `to`. */
+  list(homeId: string, from: string, to: string): Promise<Array<{ night: string; lock: NightLock }>>;
+}
+
+/** The nights in a list of locks that nobody else can take right now. */
+export function lockedNights(locks: Array<{ night: string; lock: NightLock }>, now: Date): string[] {
+  return locks.filter(({ lock }) => !isFree(lock, now)).map(({ night }) => night);
 }
 
 /** A night is free when nobody holds it, or its hold has run out. A booking never expires. */
@@ -68,5 +75,13 @@ export class InMemoryNightStore implements NightStore {
 
   async get(homeId: string, night: string): Promise<NightLock | undefined> {
     return this.locks.get(this.key(homeId, night));
+  }
+
+  async list(homeId: string, from: string, to: string) {
+    return [...this.locks.entries()]
+      .map(([k, lock]) => ({ k: k.split('|'), lock }))
+      .filter(({ k: [h, n] }) => h === homeId && n! >= from && n! < to)
+      .map(({ k: [, night], lock }) => ({ night: night!, lock }))
+      .sort((a, b) => a.night.localeCompare(b.night));
   }
 }

@@ -95,7 +95,7 @@ test('happy path: hold, authorise, final check, capture, booking', async () => {
   assert.deepEqual(t.calls, [`authorize ${t.total} authorize-h_test0001`, 'capture pi_h_test0001 capture-h_test0001']);
   assert.deepEqual(t.confirmed, ['AC-TEST0001']);
   assert.equal((await t.nights.get('sa-5br', '2026-11-10'))?.status, 'booked');
-  assert.equal(t.holds.bookings.size, 1);
+  assert.equal(t.holds.bookingsById.size, 1);
 });
 
 test('Stripe sending the event twice books once and charges once', async () => {
@@ -202,7 +202,7 @@ test('a failed capture frees the nights again', async () => {
   const r = await confirmPayment(t.deps, { holdId: start.holdId, paymentId: 'pi_h_test0001', amount: t.total });
   assert.deepEqual(r, { ok: false, reason: 'capture-failed' });
   assert.equal(await t.nights.get('sa-5br', '2026-11-10'), undefined);
-  assert.equal(t.holds.bookings.size, 0);
+  assert.equal(t.holds.bookingsById.size, 0);
 });
 
 test('a slightly late payment still books if nobody took the dates', async () => {
@@ -254,4 +254,39 @@ test('a confirmed booking goes on the export calendar with no guest details', as
   assert.match(ics, /DTEND;VALUE=DATE:20261112/);
   assert.match(ics, /SUMMARY:Reserved/);
   assert.doesNotMatch(ics, /Jordan|example\.com/);
+});
+
+test('the sweeper and a late Stripe event racing for one hold: never charged and released', async () => {
+  for (let round = 0; round < 20; round++) {
+    const t = setup();
+    const start = await startCheckout(t.deps, { signed: t.signed, guest });
+    assert.ok(start.ok);
+    t.advance(HOLD_MINUTES + SWEEP_GRACE_MINUTES + 1);
+    const event = { holdId: start.holdId, paymentId: 'pi_h_test0001', amount: t.total };
+    const [swept, confirmed] = round % 2
+      ? await Promise.all([sweepExpiredHolds(t.deps), confirmPayment(t.deps, event)])
+      : await Promise.all([confirmPayment(t.deps, event), sweepExpiredHolds(t.deps)]).then(([c, s]) => [s, c] as const);
+    const captured = t.calls.some((c) => c.startsWith('capture'));
+    const lock = await t.nights.get('sa-5br', '2026-11-10');
+    if (confirmed.ok) {
+      assert.equal(swept, 0);
+      assert.ok(captured);
+      assert.equal(lock?.status, 'booked');
+    } else {
+      assert.equal(swept, 1);
+      assert.ok(!captured);
+      assert.equal(lock, undefined);
+    }
+  }
+});
+
+test('a run that stopped after the final check started picks up on the next Stripe event', async () => {
+  const t = setup();
+  const start = await startCheckout(t.deps, { signed: t.signed, guest });
+  assert.ok(start.ok);
+  const hold = (await t.holds.get(start.holdId))!;
+  await t.holds.transition({ ...hold, status: 'confirming', bookingId: 'AC-TEST0001' }, ['awaiting-payment']);
+  const r = await confirmPayment(t.deps, { holdId: start.holdId, paymentId: 'pi_h_test0001', amount: t.total });
+  assert.ok(r.ok && !r.alreadyConfirmed);
+  assert.equal(await sweepExpiredHolds(t.deps), 0);
 });

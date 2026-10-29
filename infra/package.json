@@ -1,0 +1,26 @@
+{
+  "name": "alamo-infra",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AWS setup for Alamo City Rental: site hosting, booking API, database, schedules and alerts",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "cdk": "cdk",
+    "synth": "cdk synth --quiet",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.273.0",
+    "constructs": "10.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.3",
+    "aws-cdk": "2.1145.0",
+    "esbuild": "0.28.2",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3"
+  }
+}
