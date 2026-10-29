@@ -14,7 +14,12 @@ export interface Guest {
   phone?: string;
 }
 
-export type HoldStatus = 'awaiting-payment' | 'confirmed' | 'released';
+/**
+ * `confirming` means the final check has started. Only one step can move a
+ * hold out of `awaiting-payment`, so the sweeper and a late Stripe event can
+ * never both act on the same hold.
+ */
+export type HoldStatus = 'awaiting-payment' | 'confirming' | 'confirmed' | 'released';
 
 export interface Hold {
   id: string;
@@ -59,11 +64,14 @@ export interface LiveCalendar {
 }
 
 export interface HoldRepository {
-  save(hold: Hold): Promise<void>;
+  create(hold: Hold): Promise<void>;
   get(id: string): Promise<Hold | undefined>;
+  /** Saves `next` only if the stored hold's status is one of `from`. Returns false if another step got there first. */
+  transition(next: Hold, from: HoldStatus[]): Promise<boolean>;
   /** Holds still waiting for payment whose time ran out before `before`. */
   expired(before: Date): Promise<Hold[]>;
   saveBooking(booking: Booking): Promise<void>;
+  bookings(homeId: string): Promise<Booking[]>;
 }
 
 export interface Notifier {
@@ -152,7 +160,7 @@ export async function startCheckout(deps: CheckoutDeps, input: { signed: SignedQ
     return { ok: false, problem: 'payment-failed' };
   }
 
-  await deps.holds.save({ ...hold, paymentId: payment.paymentId });
+  await deps.holds.create({ ...hold, paymentId: payment.paymentId });
   return { ok: true, holdId, clientSecret: payment.clientSecret, expiresAt: hold.expiresAt };
 }
 
@@ -160,25 +168,31 @@ export type ConfirmResult =
   | { ok: true; booking: Booking; alreadyConfirmed?: boolean }
   | { ok: false; reason: ReleaseReason | 'unknown-hold' | 'already-released' };
 
-async function releaseHold(deps: CheckoutDeps, hold: Hold, reason: ReleaseReason): Promise<void> {
+/** Releases a hold and cancels its card authorisation, unless another step already moved the hold on. */
+async function releaseHold(deps: CheckoutDeps, hold: Hold, reason: ReleaseReason): Promise<boolean> {
+  const from: HoldStatus[] = [hold.status];
+  if (!(await deps.holds.transition({ ...hold, status: 'released', releaseReason: reason }, from))) return false;
   if (hold.paymentId) await deps.payments.cancel(hold.paymentId, `cancel-${hold.id}`);
   await deps.nights.release(hold.homeId, hold.quote.checkIn, hold.quote.checkOut, hold.id);
-  await deps.holds.save({ ...hold, status: 'released', releaseReason: reason });
   await deps.notify.holdReleased(hold, reason);
+  return true;
+}
+
+function bookingFrom(hold: Hold, confirmedAt: string): Booking {
+  return { id: hold.bookingId!, holdId: hold.id, homeId: hold.homeId, quote: hold.quote, guest: hold.guest, paymentId: hold.paymentId!, confirmedAt };
 }
 
 /**
  * Step 2, when Stripe reports the card is authorised: read Airbnb and VRBO
  * once more, then book and charge, or release and charge nothing.
- * Stripe can send the same event more than once, so this is safe to repeat.
+ * Stripe can send the same event more than once, so this is safe to repeat,
+ * and a run that stopped half way picks up where it left off.
  */
 export async function confirmPayment(deps: CheckoutDeps, event: { holdId: string; paymentId: string; amount: number }): Promise<ConfirmResult> {
-  const hold = await deps.holds.get(event.holdId);
+  let hold = await deps.holds.get(event.holdId);
   if (!hold) return { ok: false, reason: 'unknown-hold' };
 
-  if (hold.status === 'confirmed') {
-    return { ok: true, alreadyConfirmed: true, booking: { id: hold.bookingId!, holdId: hold.id, homeId: hold.homeId, quote: hold.quote, guest: hold.guest, paymentId: hold.paymentId!, confirmedAt: '' } };
-  }
+  if (hold.status === 'confirmed') return { ok: true, alreadyConfirmed: true, booking: bookingFrom(hold, '') };
   if (hold.status === 'released') {
     // The hold was given up (for example it expired), so make sure the card is not charged.
     await deps.payments.cancel(event.paymentId, `cancel-${hold.id}`);
@@ -187,6 +201,14 @@ export async function confirmPayment(deps: CheckoutDeps, event: { holdId: string
   if (event.paymentId !== hold.paymentId || event.amount !== hold.quote.total) {
     await releaseHold(deps, hold, 'amount-mismatch');
     return { ok: false, reason: 'amount-mismatch' };
+  }
+
+  const bookingId = `AC-${hold.id.slice(-8).toUpperCase()}`;
+  if (hold.status === 'awaiting-payment') {
+    const claimed: Hold = { ...hold, status: 'confirming', bookingId };
+    // Lost the race to the sweeper or a duplicate event: start again from what it left.
+    if (!(await deps.holds.transition(claimed, ['awaiting-payment']))) return confirmPayment(deps, event);
+    hold = claimed;
   }
 
   const live = await deps.calendar.externalBlocks(hold.homeId);
@@ -200,7 +222,6 @@ export async function confirmPayment(deps: CheckoutDeps, event: { holdId: string
     return { ok: false, reason: 'calendar-conflict' };
   }
 
-  const bookingId = `AC-${hold.id.slice(-8).toUpperCase()}`;
   if (!(await deps.nights.confirm(hold.homeId, checkIn, checkOut, hold.id, bookingId))) {
     await releaseHold(deps, hold, 'calendar-conflict');
     return { ok: false, reason: 'calendar-conflict' };
@@ -213,17 +234,11 @@ export async function confirmPayment(deps: CheckoutDeps, event: { holdId: string
     return { ok: false, reason: 'capture-failed' };
   }
 
-  const booking: Booking = {
-    id: bookingId,
-    holdId: hold.id,
-    homeId: hold.homeId,
-    quote: hold.quote,
-    guest: hold.guest,
-    paymentId: hold.paymentId!,
-    confirmedAt: deps.now().toISOString(),
-  };
+  const booking = bookingFrom({ ...hold, bookingId }, deps.now().toISOString());
   await deps.holds.saveBooking(booking);
-  await deps.holds.save({ ...hold, status: 'confirmed', bookingId });
+  if (!(await deps.holds.transition({ ...hold, status: 'confirmed', bookingId }, ['confirming']))) {
+    return { ok: true, alreadyConfirmed: true, booking };
+  }
   await deps.notify.bookingConfirmed(booking);
   return { ok: true, booking };
 }
@@ -237,9 +252,9 @@ export async function paymentFailed(deps: CheckoutDeps, holdId: string): Promise
 /** Runs every few minutes: releases holds whose time ran out and cancels their card authorisations. */
 export async function sweepExpiredHolds(deps: CheckoutDeps): Promise<number> {
   const cutoff = new Date(deps.now().getTime() - SWEEP_GRACE_MINUTES * 60_000);
-  const expired = await deps.holds.expired(cutoff);
-  for (const hold of expired) await releaseHold(deps, hold, 'expired');
-  return expired.length;
+  let released = 0;
+  for (const hold of await deps.holds.expired(cutoff)) if (await releaseHold(deps, hold, 'expired')) released++;
+  return released;
 }
 
 /** A confirmed booking as a block on our export calendar, so Airbnb and VRBO close the same nights. */
@@ -250,10 +265,17 @@ export function bookingBlock(booking: Booking): Block {
 /** In-memory hold storage for tests and local runs. Production uses DynamoDB. */
 export class InMemoryHoldRepository implements HoldRepository {
   readonly holdsById = new Map<string, Hold>();
-  readonly bookings = new Map<string, Booking>();
+  readonly bookingsById = new Map<string, Booking>();
 
-  async save(hold: Hold) {
+  async create(hold: Hold) {
+    if (this.holdsById.has(hold.id)) throw new Error(`Hold ${hold.id} already exists`);
     this.holdsById.set(hold.id, structuredClone(hold));
+  }
+  async transition(next: Hold, from: HoldStatus[]) {
+    const current = this.holdsById.get(next.id);
+    if (!current || !from.includes(current.status)) return false;
+    this.holdsById.set(next.id, structuredClone(next));
+    return true;
   }
   async get(id: string) {
     const h = this.holdsById.get(id);
@@ -263,6 +285,9 @@ export class InMemoryHoldRepository implements HoldRepository {
     return [...this.holdsById.values()].filter((h) => h.status === 'awaiting-payment' && Date.parse(h.expiresAt) < before.getTime()).map((h) => structuredClone(h));
   }
   async saveBooking(booking: Booking) {
-    this.bookings.set(booking.id, structuredClone(booking));
+    this.bookingsById.set(booking.id, structuredClone(booking));
+  }
+  async bookings(homeId: string) {
+    return [...this.bookingsById.values()].filter((b) => b.homeId === homeId).map((b) => structuredClone(b));
   }
 }

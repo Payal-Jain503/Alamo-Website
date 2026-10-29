@@ -3,3 +3,5 @@ out/
 .env
 *.local.ics
 .DS_Store
+cdk.out/
+.next/

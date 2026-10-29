@@ -73,6 +73,30 @@ so a booking made here can still be taken there in that window. The two live
 checks keep our side safe; closing their window fully needs a channel manager
 or their APIs.
 
+## Server
+
+`src/server/service.ts` ties it together as `BookingService`, with no AWS code
+in it, so the tests run it end to end in memory:
+
+| Path | What it does |
+| --- | --- |
+| `GET /api/availability?home=<id>` | Nights the website calendar shows as taken. No guest or source details. |
+| `POST /api/quote` | Prices a stay and returns a signed quote. Counts our bookings and other guests' live holds. |
+| `POST /api/reserve` | `startCheckout`: returns the Stripe client secret for the card form. |
+| `GET /api/hold?id=<hold>` | What the website shows after the card step: checking, booked or released. |
+| `POST /api/stripe-webhook` | Signature-checked; books and charges, or releases. |
+| `GET /cal/<home>-<token>.ics` | Our export calendar for Airbnb and VRBO. |
+
+Requests without CloudFront's secret `x-alamo-origin` header are refused, so the
+firewall can't be bypassed. The scheduled job reads every home's calendars every
+15 minutes and emails the owner once when a feed has failed 3 times in a row and
+once for each new double booking. The sweeper runs every 5 minutes.
+
+`src/aws/` holds the AWS side: DynamoDB versions of the stores (one table; nights
+are claimed in a single conditional transaction), the Lambda handlers, and
+start-up that reads secrets from Parameter Store. `src/server/homes.ts` lists
+the homes and their rates. The AWS setup itself is in [`../infra`](../infra).
+
 ## Check one home
 
 ```sh
@@ -93,7 +117,7 @@ VRBO exports, including one deliberate double booking on 19 Dec 2026.
 ## Tests
 
 ```sh
-npm test        # 77 tests, Node's built-in runner
+npm test        # 90 tests, Node's built-in runner
 npm run typecheck
 ```
 
@@ -111,7 +135,10 @@ npm run typecheck
 | `src/holds.ts` | Night-by-night locks: 15-minute holds and bookings |
 | `src/checkout.ts` | Reserve, final check, capture or release, and the expiry sweeper |
 | `src/stripe.ts` | Stripe PaymentIntents over REST and webhook signature checks |
+| `src/server/` | `BookingService`, HTTP routing, the homes and their rates |
+| `src/aws/` | DynamoDB stores, Lambda handlers, secrets from Parameter Store |
+| `src/exportLink.ts` | Prints a home's export calendar link (`npm run export-link`) |
 | `src/preview.ts`, `src/cli.ts` | The calendar check tool |
 
-`sync.ts` and the other modules have no AWS code yet, so they can run unchanged
-inside the Lambda sync job later.
+Only `src/aws/` knows about AWS. Everything else runs the same in tests, on a
+laptop and in Lambda.
