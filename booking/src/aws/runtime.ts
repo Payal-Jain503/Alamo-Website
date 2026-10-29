@@ -2,6 +2,7 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import { PublishCommand, SNSClient } from '@aws-sdk/client-sns';
 import { GetParametersByPathCommand, SSMClient } from '@aws-sdk/client-ssm';
+import type { PaymentGateway } from '../checkout.js';
 import { BookingService, type Alerts, type Secrets } from '../server/service.js';
 import { HOMES } from '../server/homes.js';
 import { StripeGateway } from '../stripe.js';
@@ -12,8 +13,8 @@ import { DynamoFeedStore, DynamoHoldRepository, DynamoNightStore } from './table
  * Builds the booking service from the Lambda environment. Secrets live in
  * Parameter Store as SecureStrings under one prefix (default /alamo-web/):
  *
- *   /alamo-web/stripe/secret-key        sk_live_… or sk_test_…
- *   /alamo-web/stripe/webhook-secret    whsec_…
+ *   /alamo-web/stripe/secret-key        sk_live_… or sk_test_…   (optional until Stripe is set up)
+ *   /alamo-web/stripe/webhook-secret    whsec_…                  (optional until Stripe is set up)
  *   /alamo-web/quote-secret             32+ random characters
  *   /alamo-web/export-secret            32+ random characters
  *   /alamo-web/origin-secret            32+ random characters, also set on CloudFront
@@ -40,6 +41,19 @@ export function runtime(): Promise<Runtime> {
   }
   return cached.runtime;
 }
+
+/** Stands in until the Stripe keys exist. Paying fails cleanly, which frees the held dates and charges nothing. */
+const paymentsNotSetUp: PaymentGateway = {
+  authorize: async () => {
+    throw new Error('Stripe is not set up yet');
+  },
+  capture: async () => {
+    throw new Error('Stripe is not set up yet');
+  },
+  cancel: async () => {
+    throw new Error('Stripe is not set up yet');
+  },
+};
 
 const env = (name: string) => {
   const v = process.env[name];
@@ -89,10 +103,10 @@ async function build(): Promise<Runtime> {
     nights: new DynamoNightStore(db, table),
     holds: new DynamoHoldRepository(db, table),
     feeds: new DynamoFeedStore(db, table),
-    payments: new StripeGateway(need('stripe/secret-key')),
+    payments: params.get('stripe/secret-key') ? new StripeGateway(params.get('stripe/secret-key')!) : paymentsNotSetUp,
     alerts,
     secrets: {
-      stripeWebhookSecret: need('stripe/webhook-secret'),
+      stripeWebhookSecret: params.get('stripe/webhook-secret'),
       quoteSecret: need('quote-secret'),
       exportSecret: need('export-secret'),
       feedUrls,

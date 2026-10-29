@@ -191,3 +191,43 @@ test('a base64 body from the Function URL is decoded before the signature check'
   );
   assert.equal(r.statusCode, 200);
 });
+
+test('without Stripe keys the site still serves dates and quotes, paying fails cleanly and webhooks are refused', async () => {
+  const s = setup();
+  const noStripe = new BookingService({
+    homes: [home],
+    nights: new InMemoryNightStore(),
+    holds: new InMemoryHoldRepository(),
+    feeds: new InMemoryFeedStore(),
+    payments: {
+      authorize: async () => {
+        throw new Error('Stripe is not set up yet');
+      },
+      capture: async () => {},
+      cancel: async () => {},
+    },
+    alerts: { send: async () => {} },
+    secrets: { quoteSecret: 'quote-secret-that-is-long-enough-12345', exportSecret: 'export-secret', feedUrls: { [home.id]: { airbnb: AIRBNB, vrbo: VRBO } } },
+    now: () => s.clock.now,
+    fetchImpl: (async () => new Response(ics(), { status: 200, headers: { 'content-type': 'text/calendar' } })) as unknown as typeof fetch,
+  });
+  await noStripe.syncAll();
+  assert.equal((await noStripe.availability(home.id)).status, 200);
+
+  // A signature made with an empty secret must not be accepted.
+  const raw = JSON.stringify({ id: 'evt_1', type: 'payment_intent.amount_capturable_updated', data: { object: { id: 'pi_x', metadata: { holdId: 'h_x' } } } });
+  const t = Math.floor(s.clock.now.getTime() / 1000);
+  const forged = `t=${t},v1=${createHmac('sha256', '').update(`${t}.${raw}`).digest('hex')}`;
+  const hook = await noStripe.stripeWebhook(raw, forged);
+  assert.equal(hook.status, 503);
+  assert.equal(hook.body.error, 'payments-not-configured');
+
+  const quote = await noStripe.quote({ homeId: home.id, checkIn: '2026-12-01', checkOut: '2026-12-04', guests: 2 });
+  assert.equal(quote.status, 200);
+  const reserved = await noStripe.reserve({ signed: (quote.body as { signed: SignedQuote }).signed, guest });
+  assert.equal(reserved.body.ok, false);
+  assert.equal((reserved.body as { problem: string }).problem, 'payment-failed');
+  // The dates were released, so the guest can try again once payments exist.
+  const after = (await noStripe.availability(home.id)).body as { blocked: string[] };
+  assert.equal(after.blocked.includes('2026-12-01'), false);
+});
