@@ -1,0 +1,65 @@
+name: deploy
+
+# Deploys the site and booking engine to the client's AWS account.
+# Uses GitHub's OIDC sign-in, so no AWS keys are stored in GitHub.
+# Does nothing until the AWS_DEPLOY_ROLE_ARN repository variable is set.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    if: vars.AWS_DEPLOY_ROLE_ARN != ''
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check settings
+        run: test -n "${{ vars.OWNER_EMAIL }}" || { echo "Set the OWNER_EMAIL repository variable first"; exit 1; }
+
+      - name: Test the booking engine
+        working-directory: booking
+        run: |
+          npm ci
+          npm run typecheck
+          npm test
+
+      - name: Build the website
+        if: hashFiles('web/package.json') != ''
+        working-directory: web
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          # Stripe's publishable key is public by design; online booking stays off without it.
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ vars.STRIPE_PUBLISHABLE_KEY }}
+        run: |
+          npm ci
+          npm run build
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'ap-south-1' }}
+
+      - name: Deploy
+        working-directory: infra
+        run: |
+          npm ci
+          npx cdk deploy AlamoWebsite --require-approval never \
+            -c ownerEmail="${{ vars.OWNER_EMAIL }}" \
+            -c domainNames="${{ vars.DOMAIN_NAMES }}" \
+            -c certificateArn="${{ vars.CERTIFICATE_ARN }}" \
+            -c region="${{ vars.AWS_REGION }}"
