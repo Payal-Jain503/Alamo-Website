@@ -37,9 +37,9 @@ export class StripeGateway implements PaymentGateway {
         amount: String(input.amount),
         currency: input.currency,
         capture_method: 'manual',
-        'automatic_payment_methods[enabled]': 'true',
-        // Bank debits can't be held and released, so the hold-then-charge flow uses cards and wallets only.
-        'automatic_payment_methods[allow_redirects]': 'never',
+        // Bank debits can't be held and released, and Link and pay-later options add steps that can stall
+        // the hold-then-charge flow, so guests pay by card only.
+        'payment_method_types[0]': 'card',
         receipt_email: input.email,
         'metadata[holdId]': input.holdId,
         'metadata[homeId]': input.homeId,
