@@ -57,8 +57,7 @@ test('authorize creates a manual-capture PaymentIntent with an idempotency key',
   assert.equal(params.get('capture_method'), 'manual');
   assert.equal(params.get('amount'), '93725');
   assert.equal(params.get('metadata[holdId]'), 'h_1');
-  assert.equal(params.get('payment_method_types[0]'), 'card');
-  assert.equal(params.get('automatic_payment_methods[enabled]'), null);
+  assert.equal(params.get('automatic_payment_methods[allow_redirects]'), 'never');
 });
 
 test('capture and cancel call the right endpoints; cancelling twice is fine', async () => {
