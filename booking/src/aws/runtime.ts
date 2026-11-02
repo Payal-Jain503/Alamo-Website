@@ -1,8 +1,10 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
+import { SESv2Client, SendEmailCommand } from '@aws-sdk/client-sesv2';
 import { PublishCommand, SNSClient } from '@aws-sdk/client-sns';
 import { GetParametersByPathCommand, SSMClient } from '@aws-sdk/client-ssm';
 import type { PaymentGateway } from '../checkout.js';
+import type { GuestMailer } from '../guestEmail.js';
 import { BookingService, type Alerts, type Secrets } from '../server/service.js';
 import { HOMES } from '../server/homes.js';
 import { StripeGateway } from '../stripe.js';
@@ -98,6 +100,24 @@ async function build(): Promise<Runtime> {
     },
   };
 
+  // Guest emails start once a sender address is saved (and verified in Amazon SES).
+  const fromAddress = params.get('email/from-address');
+  const ses = new SESv2Client({});
+  const guestMail: GuestMailer | undefined = fromAddress
+    ? {
+        async send(to, subject, text) {
+          await ses.send(
+            new SendEmailCommand({
+              FromEmailAddress: fromAddress,
+              Destination: { ToAddresses: [to] },
+              ReplyToAddresses: [fromAddress],
+              Content: { Simple: { Subject: { Data: subject }, Body: { Text: { Data: text } } } },
+            }),
+          );
+        },
+      }
+    : undefined;
+
   const service = new BookingService({
     homes: HOMES,
     nights: new DynamoNightStore(db, table),
@@ -105,6 +125,8 @@ async function build(): Promise<Runtime> {
     feeds: new DynamoFeedStore(db, table),
     payments: params.get('stripe/secret-key') ? new StripeGateway(params.get('stripe/secret-key')!) : paymentsNotSetUp,
     alerts,
+    guestMail,
+    contact: { email: fromAddress },
     secrets: {
       stripeWebhookSecret: params.get('stripe/webhook-secret'),
       quoteSecret: need('quote-secret'),

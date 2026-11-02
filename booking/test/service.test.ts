@@ -24,7 +24,7 @@ const guest = { name: 'Jordan Lee', email: 'jordan@example.com' };
 const reservation = (start: string, end: string, uid: string, summary = 'Reserved') =>
   vevent({ 'DTSTART;VALUE=DATE': start.replaceAll('-', ''), 'DTEND;VALUE=DATE': end.replaceAll('-', ''), UID: uid, SUMMARY: summary });
 
-function setup() {
+function setup(opts: { mailFails?: boolean } = {}) {
   const clock = { now: new Date('2026-10-29T15:00:00Z') };
   const feeds: Record<string, string | Error> = {
     [AIRBNB]: ics(reservation('2026-11-02', '2026-11-06', 'a1@airbnb.com')),
@@ -36,6 +36,7 @@ function setup() {
     return new Response(f, { status: 200, headers: { 'content-type': 'text/calendar' } });
   }) as unknown as typeof fetch;
   const alerts: Array<{ subject: string; message: string }> = [];
+  const mails: Array<{ to: string; subject: string; text: string }> = [];
   const charged: string[] = [];
   const payments: PaymentGateway = {
     authorize: async (i) => ({ paymentId: `pi_${i.holdId}`, clientSecret: `cs_${i.holdId}` }),
@@ -50,6 +51,12 @@ function setup() {
     feeds: new InMemoryFeedStore(),
     payments,
     alerts: { send: async (subject, message) => void alerts.push({ subject, message }) },
+    guestMail: {
+      send: async (to, subject, text) => {
+        if (opts.mailFails) throw new Error('sender not verified');
+        mails.push({ to, subject, text });
+      },
+    },
     secrets: { stripeWebhookSecret: whsec, quoteSecret: 'quote-secret-that-is-long-enough-12345', exportSecret: 'export-secret', feedUrls: { [home.id]: { airbnb: AIRBNB, vrbo: VRBO } } },
     now: () => clock.now,
     fetchImpl,
@@ -66,7 +73,7 @@ function setup() {
       } satisfies HttpRequest,
       origin,
     );
-  return { service, feeds, alerts, charged, holds, clock, call };
+  return { service, feeds, alerts, mails, charged, holds, clock, call };
 }
 
 function stripeEvent(type: string, intent: Record<string, unknown>, now: Date) {
@@ -230,4 +237,34 @@ test('without Stripe keys the site still serves dates and quotes, paying fails c
   // The dates were released, so the guest can try again once payments exist.
   const after = (await noStripe.availability(home.id)).body as { blocked: string[] };
   assert.equal(after.blocked.includes('2026-12-01'), false);
+});
+
+async function bookStay(s: ReturnType<typeof setup>) {
+  const quote = await s.call('POST', '/api/quote', { body: { homeId: home.id, checkIn: '2026-11-09', checkOut: '2026-11-12', guests: 4 } });
+  const signed: SignedQuote = JSON.parse(quote.body).signed;
+  const { holdId } = JSON.parse((await s.call('POST', '/api/reserve', { body: { signed, guest } })).body);
+  const ev = stripeEvent('payment_intent.amount_capturable_updated', { id: `pi_${holdId}`, amount_capturable: signed.quote.total, metadata: { holdId } }, s.clock.now);
+  const hook = await s.call('POST', '/api/stripe-webhook', { raw: ev.raw, headers: { 'stripe-signature': ev.signature } });
+  const status = JSON.parse((await s.call('GET', '/api/hold', { query: { id: holdId } })).body);
+  return { hook, status, total: signed.quote.total };
+}
+
+test('the guest gets a confirmation email with their stay and total', async () => {
+  const s = setup();
+  const { status } = await bookStay(s);
+  assert.equal(status.status, 'confirmed');
+  assert.equal(s.mails.length, 1);
+  assert.equal(s.mails[0]!.to, 'jordan@example.com');
+  assert.match(s.mails[0]!.subject, new RegExp(status.bookingId));
+  assert.match(s.mails[0]!.text, /Check-in: 2026-11-09/);
+  assert.match(s.mails[0]!.text, /Total charged: \$925\.00/);
+});
+
+test('a failing confirmation email never undoes the booking and the owner hears about it', async () => {
+  const s = setup({ mailFails: true });
+  const { hook, status } = await bookStay(s);
+  assert.equal(hook.statusCode, 200);
+  assert.equal(status.status, 'confirmed');
+  assert.equal(s.mails.length, 0);
+  assert.ok(s.alerts.some((a) => /Confirmation email not sent/.test(a.subject) && /sender not verified/.test(a.message)));
 });
