@@ -114,6 +114,13 @@ export class SiteStack extends Stack {
           resources: ['', '/*'].map((tail) => this.formatArn({ service: 'ssm', resource: 'parameter', resourceName: prefix.replace(/^\/|\/$/g, '') + tail })),
         }),
       );
+      // Guest confirmation emails, sent from an address verified in Amazon SES.
+      fn.addToRolePolicy(
+        new iam.PolicyStatement({
+          actions: ['ses:SendEmail'],
+          resources: [this.formatArn({ service: 'ses', resource: 'identity', resourceName: '*' })],
+        }),
+      );
     }
 
     new events.Rule(this, 'SyncEvery15Minutes', {

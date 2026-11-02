@@ -17,6 +17,7 @@ import {
 import { addDays, dateInTimeZone } from '../dates.js';
 import { buildExportCalendar } from '../exportFeed.js';
 import { lockedNights, type NightStore } from '../holds.js';
+import { bookingConfirmationEmail, type GuestMailer } from '../guestEmail.js';
 import { formatUsd, quoteStay, type QuoteProblem, type RatePlan, type StayRequest } from '../pricing.js';
 import { signQuote, type SignedQuote } from '../signedQuote.js';
 import { readCheckoutEvent, verifyStripeSignature } from '../stripe.js';
@@ -61,6 +62,10 @@ export interface ServiceDeps {
   feeds: FeedStore;
   payments: PaymentGateway;
   alerts: Alerts;
+  /** Sends the guest their confirmation. Left out until a sender address is set up. */
+  guestMail?: GuestMailer;
+  /** Shown to guests in their confirmation email. */
+  contact?: { phone?: string; email?: string };
   secrets: Secrets;
   now?(): Date;
   fetchImpl?: typeof fetch;
@@ -145,9 +150,23 @@ export class BookingService {
     },
   };
 
+  /** The guest's confirmation. A failure here is reported to the owner and never undoes the booking. */
+  private async emailGuest(b: Parameters<Notifier['bookingConfirmed']>[0], homeName: string): Promise<void> {
+    if (!this.deps.guestMail) return;
+    try {
+      const mail = bookingConfirmationEmail(b, homeName, this.deps.contact);
+      await this.deps.guestMail.send(b.guest.email, mail.subject, mail.text);
+    } catch (err) {
+      await this.deps.alerts
+        .send(`Confirmation email not sent for ${b.id}`, `The booking is confirmed, but the email to ${b.guest.email} failed: ${err instanceof Error ? err.message : String(err)}`)
+        .catch(() => {});
+    }
+  }
+
   private readonly notifier: Notifier = {
     bookingConfirmed: async (b) => {
       const home = this.home(b.homeId);
+      await this.emailGuest(b, home?.name ?? b.homeId);
       await this.deps.alerts.send(
         `New booking ${b.id}: ${home?.name ?? b.homeId}, ${b.quote.checkIn} to ${b.quote.checkOut}`,
         [
