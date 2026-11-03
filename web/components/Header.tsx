@@ -7,6 +7,7 @@ interface NavHome {
   slug: string;
   name: string;
   cityName: string;
+  bedrooms?: number;
 }
 
 interface HeaderProps {
@@ -104,16 +105,28 @@ export function Header({ homes, cities, phone, phoneHref, email, instagram }: He
                 Homes
                 <span className="caret" aria-hidden="true" />
               </button>
-              <div id="menu-homes" className={`dropdown narrow${open === 'homes' ? ' show' : ''}`}>
-                {[
-                  { label: '3 Bedrooms', value: '3' },
-                  { label: '4 Bedrooms', value: '4' },
-                  { label: '5+ Bedrooms', value: '5' },
-                ].map((b) => (
-                  <Link key={b.value} href={`/homes/?bedrooms=${b.value}`} onClick={close}>
-                    {b.label}
-                  </Link>
-                ))}
+              <div id="menu-homes" className={`dropdown${open === 'homes' ? ' show' : ''}`}>
+                {cities.map((c) => {
+                  const here = homes.filter((h) => h.cityName === c.name);
+                  const sizes = [
+                    { label: '3 Bedrooms', value: '3', count: here.filter((h) => h.bedrooms === 3).length },
+                    { label: '4 Bedrooms', value: '4', count: here.filter((h) => h.bedrooms === 4).length },
+                    { label: '5+ Bedrooms', value: '5', count: here.filter((h) => (h.bedrooms ?? 0) >= 5).length },
+                  ].filter((x) => x.count > 0);
+                  return (
+                    <div key={c.slug} className="dropdown-group">
+                      <p>{c.name}</p>
+                      {sizes.map((x) => (
+                        <Link key={x.value} href={`/homes/?city=${c.slug}&bedrooms=${x.value}`} onClick={close}>
+                          {x.label}
+                        </Link>
+                      ))}
+                      <Link href={`/homes/?city=${c.slug}`} onClick={close}>
+                        All {c.name} homes
+                      </Link>
+                    </div>
+                  );
+                })}
                 <Link href="/homes/" className="dropdown-all" onClick={close}>
                   All homes
                 </Link>

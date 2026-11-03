@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = { themeColor: '#0e1724', width: 'device-width', initialScale: 1 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  const navHomes = homes.map((h) => ({ slug: h.slug, name: h.name, cityName: cityBySlug(h.city)?.name ?? '' }));
+  const navHomes = homes.map((h) => ({ slug: h.slug, name: h.name, cityName: cityBySlug(h.city)?.name ?? '', bedrooms: h.bedrooms }));
   return (
     <html lang="en">
       <head>
