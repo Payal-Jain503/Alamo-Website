@@ -3,50 +3,69 @@
 import { useEffect, useRef, useState } from 'react';
 
 const MAX_SLIDES = 6;
-const HOVER_MS = 1800;
+const AUTO_MS = 4000;
 
 /**
- * The photo area of a home card. Shows the cover photo and lets visitors flip
- * through more with arrows and dots; photos also advance on their own while
- * the pointer is over the card. Only photos that have been shown are loaded,
- * so a page full of cards stays fast.
+ * The photo area of a home card. Photos rotate on their own while the card is
+ * on screen, and visitors can also flip through them with the arrows. Rotation
+ * pauses while the pointer or keyboard focus is on the card. Only photos that
+ * have been shown are loaded, so a page full of cards stays fast.
  */
 export function CardSlider({ slug, name, photos }: { slug: string; name: string; photos: string[] }) {
   const slides = photos.slice(0, MAX_SLIDES);
   const [index, setIndex] = useState(0);
   const [seen, setSeen] = useState<number[]>([0]);
-  const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const paused = useRef(false);
+  const visible = useRef(false);
+  const root = useRef<HTMLDivElement>(null);
 
-  const go = (next: number) => {
+  const show = (next: number) => {
     const i = (next + slides.length) % slides.length;
     setIndex(i);
     setSeen((s) => (s.includes(i) ? s : [...s, i]));
   };
 
-  const stop = () => {
-    if (timer.current) clearInterval(timer.current);
-    timer.current = null;
-  };
-  const start = () => {
-    if (slides.length < 2 || timer.current) return;
+  useEffect(() => {
+    if (slides.length < 2) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    timer.current = setInterval(() => setIndex((i) => {
-      const n = (i + 1) % slides.length;
-      setSeen((s) => (s.includes(n) ? s : [...s, n]));
-      return n;
-    }), HOVER_MS);
-  };
-  useEffect(() => stop, []);
+    const el = root.current;
+    const io = new IntersectionObserver(([entry]) => { visible.current = !!entry?.isIntersecting; }, { threshold: 0.3 });
+    if (el) io.observe(el);
+    // A random start delay keeps the cards from all flipping together.
+    let interval: ReturnType<typeof setInterval> | undefined;
+    const startDelay = setTimeout(() => {
+      interval = setInterval(() => {
+        if (paused.current || !visible.current) return;
+        setIndex((i) => {
+          const n = (i + 1) % slides.length;
+          setSeen((s) => (s.includes(n) ? s : [...s, n]));
+          return n;
+        });
+      }, AUTO_MS);
+    }, Math.random() * AUTO_MS);
+    return () => {
+      io.disconnect();
+      clearTimeout(startDelay);
+      if (interval) clearInterval(interval);
+    };
+  }, [slides.length]);
 
   // The card is a link, so the controls must not follow it.
   const press = (e: React.SyntheticEvent, next: number) => {
     e.preventDefault();
     e.stopPropagation();
-    go(next);
+    show(next);
   };
 
   return (
-    <div className="card-slider" onMouseEnter={start} onMouseLeave={stop} onFocus={stop}>
+    <div
+      ref={root}
+      className="card-slider"
+      onMouseEnter={() => { paused.current = true; }}
+      onMouseLeave={() => { paused.current = false; }}
+      onFocus={() => { paused.current = true; }}
+      onBlur={() => { paused.current = false; }}
+    >
       {slides.map((file, i) =>
         seen.includes(i) ? (
           <img
