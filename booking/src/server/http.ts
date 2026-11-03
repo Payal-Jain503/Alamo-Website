@@ -1,4 +1,5 @@
 import { timingSafeEqual } from 'node:crypto';
+import { bearerToken, EMAIL, type AccountSupport } from '../accounts.js';
 import type { BookingService } from './service.js';
 
 /** The parts of a Lambda Function URL request (payload version 2.0) this API reads. */
@@ -56,7 +57,7 @@ const HOME_ID = /^[a-z0-9-]{1,64}$/;
 const HOLD_ID = /^h_[0-9a-f-]{36}$/;
 
 /** Routes one request. Every guest-facing answer is JSON; the export calendar is iCal text. */
-export async function handleHttp(service: BookingService, req: HttpRequest, originSecret: string): Promise<HttpResponse> {
+export async function handleHttp(service: BookingService, req: HttpRequest, originSecret: string, accounts?: AccountSupport): Promise<HttpResponse> {
   if (!sameSecret(req.headers[ORIGIN_HEADER], originSecret)) return json(403, { error: 'forbidden' });
 
   const method = req.requestContext.http.method;
@@ -87,6 +88,29 @@ export async function handleHttp(service: BookingService, req: HttpRequest, orig
     if (method === 'GET' && path === '/api/hold') {
       if (!HOLD_ID.test(query.id ?? '')) return json(400, { error: 'bad-request' });
       const r = await service.holdStatus(query.id!);
+      return json(r.status, r.body);
+    }
+
+    // Guest accounts. Cognito emails the sign-in code; these routes only prepare the user and read their trips.
+    if (method === 'GET' && path === '/api/auth/config') {
+      if (!accounts) return json(503, { error: 'accounts-not-set-up' });
+      return json(200, accounts.config);
+    }
+
+    if (method === 'POST' && path === '/api/auth/start') {
+      if (!accounts) return json(503, { error: 'accounts-not-set-up' });
+      const email = String((parseJson(body) as { email?: unknown } | undefined)?.email ?? '').trim().toLowerCase();
+      if (!EMAIL.test(email) || email.length > 254) return json(400, { error: 'invalid-email' });
+      await accounts.directory.ensure(email);
+      return json(200, { ok: true });
+    }
+
+    if (method === 'GET' && path === '/api/me') {
+      if (!accounts) return json(503, { error: 'accounts-not-set-up' });
+      const token = bearerToken(req.headers.authorization);
+      const email = token ? await accounts.verifier.verify(token) : undefined;
+      if (!email) return json(401, { error: 'sign-in-required' });
+      const r = await service.account(email);
       return json(r.status, r.body);
     }
 

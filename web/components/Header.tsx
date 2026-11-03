@@ -155,6 +155,11 @@ export function Header({ homes, cities, phone, phoneHref, email, instagram }: He
                 Contact
               </Link>
             </li>
+            <li>
+              <Link href="/account/" onClick={close}>
+                My trips
+              </Link>
+            </li>
             <li className="nav-cta">
               <Link href="/homes/" className="btn btn-solid" onClick={close}>
                 Book your stay

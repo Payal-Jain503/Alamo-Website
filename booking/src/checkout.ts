@@ -72,6 +72,8 @@ export interface HoldRepository {
   expired(before: Date): Promise<Hold[]>;
   saveBooking(booking: Booking): Promise<void>;
   bookings(homeId: string): Promise<Booking[]>;
+  /** Every confirmed booking made with this email address, newest check-in first. */
+  bookingsByEmail(email: string): Promise<Booking[]>;
 }
 
 export interface Notifier {
@@ -289,5 +291,12 @@ export class InMemoryHoldRepository implements HoldRepository {
   }
   async bookings(homeId: string) {
     return [...this.bookingsById.values()].filter((b) => b.homeId === homeId).map((b) => structuredClone(b));
+  }
+  async bookingsByEmail(email: string) {
+    const wanted = email.trim().toLowerCase();
+    return [...this.bookingsById.values()]
+      .filter((b) => b.guest.email.trim().toLowerCase() === wanted)
+      .sort((a, b) => b.quote.checkIn.localeCompare(a.quote.checkIn))
+      .map((b) => structuredClone(b));
   }
 }

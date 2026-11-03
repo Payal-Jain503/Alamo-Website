@@ -24,6 +24,9 @@ import type { Source } from '../types.js';
  * | HOME#<id>     | ALERTS                    | double bookings already sent  |
  * | HOLD#<id>     | HOLD                      | a checkout in progress        |
  *
+ * Confirmed bookings are also in the `gsi2` index (gsi2pk EMAIL#<guest email>, gsi2sk
+ * <check-in>#<id>) so a signed-in guest can list their trips.
+ *
  * Holds waiting for payment are also in the `gsi1` index (gsi1pk AWAITING,
  * gsi1sk expiry time) so the sweeper can find the ones that ran out.
  */
@@ -34,6 +37,7 @@ const MAX_NIGHTS_PER_CLAIM = 100;
 const DAY_SECONDS = 86_400;
 
 const homeKey = (homeId: string) => `HOME#${homeId}`;
+const emailKey = (email: string) => `EMAIL#${email.trim().toLowerCase()}`;
 const nightKey = (night: string) => `NIGHT#${night}`;
 const epochSeconds = (iso: string) => Math.floor(Date.parse(iso) / 1000);
 
@@ -224,8 +228,29 @@ export class DynamoHoldRepository implements HoldRepository {
 
   async saveBooking(booking: Booking) {
     await this.db.send(
-      new PutCommand({ TableName: this.table, Item: { pk: homeKey(booking.homeId), sk: `BOOKING#${booking.quote.checkIn}#${booking.id}`, booking } }),
+      new PutCommand({
+        TableName: this.table,
+        Item: {
+          pk: homeKey(booking.homeId),
+          sk: `BOOKING#${booking.quote.checkIn}#${booking.id}`,
+          booking,
+          // Lets a guest who signs in see every booking made with their email.
+          gsi2pk: emailKey(booking.guest.email),
+          gsi2sk: `${booking.quote.checkIn}#${booking.id}`,
+        },
+      }),
     );
+  }
+
+  async bookingsByEmail(email: string) {
+    const items = await queryAll(this.db, {
+      TableName: this.table,
+      IndexName: 'gsi2',
+      KeyConditionExpression: 'gsi2pk = :email',
+      ExpressionAttributeValues: { ':email': emailKey(email) },
+      ScanIndexForward: false,
+    });
+    return items.map((i) => i.booking as Booking);
   }
 
   async bookings(homeId: string) {

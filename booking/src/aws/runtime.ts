@@ -3,6 +3,8 @@ import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import { SESv2Client, SendEmailCommand } from '@aws-sdk/client-sesv2';
 import { PublishCommand, SNSClient } from '@aws-sdk/client-sns';
 import { GetParametersByPathCommand, SSMClient } from '@aws-sdk/client-ssm';
+import type { AccountSupport } from '../accounts.js';
+import { cognitoAccounts } from './cognito.js';
 import type { PaymentGateway } from '../checkout.js';
 import type { GuestMailer } from '../guestEmail.js';
 import { BookingService, type Alerts, type Secrets } from '../server/service.js';
@@ -30,6 +32,8 @@ const CACHE_MS = 5 * 60_000;
 export interface Runtime {
   service: BookingService;
   originSecret: string;
+  /** Left out until the Cognito user pool is deployed. */
+  accounts?: AccountSupport;
 }
 
 let cached: { at: number; runtime: Promise<Runtime> } | undefined;
@@ -134,5 +138,7 @@ async function build(): Promise<Runtime> {
       feedUrls,
     },
   });
-  return { service, originSecret: need('origin-secret') };
+  const poolId = process.env.USER_POOL_ID;
+  const clientId = process.env.USER_POOL_CLIENT_ID;
+  return { service, originSecret: need('origin-secret'), accounts: poolId && clientId ? cognitoAccounts(poolId, clientId) : undefined };
 }
