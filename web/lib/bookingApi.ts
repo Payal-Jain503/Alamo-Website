@@ -57,7 +57,7 @@ export async function getAvailability(homeId: string): Promise<Set<string>> {
   return new Set(body.blocked);
 }
 
-export async function getQuote(input: { homeId: string; checkIn: string; checkOut: string; guests: number }) {
+export async function getQuote(input: { homeId: string; checkIn: string; checkOut: string; guests: number; pets?: number }) {
   return call<{ signed?: SignedQuote; error?: string; message?: string }>('/api/quote', { method: 'POST', body: JSON.stringify(input) });
 }
 
