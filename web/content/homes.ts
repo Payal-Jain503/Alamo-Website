@@ -155,6 +155,21 @@ export const homes: Home[] = [
     photos: ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.jpg', '08.jpg', '09.jpg', '10.jpg', '11.jpg', '12.jpg', '13.jpg', '14.jpg'],
   },
   {
+    slug: 'oat-st',
+    name: 'Oat St',
+    city: 'houston',
+    bedrooms: 3,
+    headline: 'A modern three-bedroom Houston home near NRG and downtown, with a fenced yard',
+    description: [
+      'A bright, modern three-bedroom townhome-style house close to NRG Stadium and downtown Houston, good for families, work trips and event weekends.',
+      'The open living area has a large sectional and a TV wall, and the kitchen has an island with seating. The primary bath has a soaking tub and a walk-in shower, there is a desk set up for working, and the fenced backyard is private.',
+    ],
+    highlights: ['3 bedrooms', 'Near NRG Stadium and downtown', 'Open kitchen with island', 'Soaking tub in the primary bath', 'Fenced backyard'],
+    amenities: [...standardAmenities, 'Work desk', 'Fenced backyard', 'Garage'],
+    tone: 'navy',
+    photos: ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.jpg', '08.jpg', '09.jpg', '10.jpg', '11.jpg', '12.jpg', '13.jpg', '14.jpg'],
+  },
+  {
     slug: 'austin-home',
     name: 'Austin Home',
     city: 'austin',
