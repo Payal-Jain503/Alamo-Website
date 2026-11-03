@@ -198,6 +198,20 @@ export const homes: Home[] = [
     photos: ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.jpg', '08.jpg', '09.jpg', '10.jpg'],
   },
   {
+    slug: 'crimson',
+    name: 'Crimson Star',
+    city: 'san-antonio',
+    headline: 'A spacious San Antonio home for groups and family stays',
+    description: [
+      'A comfortable, well-kept home in San Antonio, good for families and groups.',
+      'Browse the photos below for the living areas, kitchen, bedrooms and outdoor space.',
+    ],
+    highlights: ['Room for the whole group', 'Full kitchen', 'Free parking'],
+    amenities: standardAmenities,
+    tone: 'sand',
+    photos: ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.jpg', '08.jpg', '09.jpg', '10.jpg', '11.jpg', '12.jpg', '13.jpg', '14.jpg', '15.jpg', '16.jpg', '17.jpg', '18.jpg', '19.jpg', '20.jpg', '21.jpg', '22.jpg', '23.jpg', '24.jpg'],
+  },
+  {
     slug: 'austin-home',
     name: 'Austin Home',
     city: 'austin',
