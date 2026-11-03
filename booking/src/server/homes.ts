@@ -8,24 +8,59 @@ import type { HomeConfig } from './service.js';
  * fees and tax rates are placeholders until the client confirms them, and
  * the id must match the home's page slug on the website.
  */
+/** Dollars: nightly rate, cleaning fee (management fee included), guests included, extra guest per night. */
+type Rate = [number?, number?, number?, number?];
+
+const RATES: Record<string, Rate> = {
+  'hideaway': [281, 180, 12, 15],
+  'texas-buckeye': [150, 190, 6, 25],
+  'longhorn-creek': [151, 150, 6, 25],
+  'sitio-plains': [175, 150, 8, 25],
+  'bender-azim': [200, 160, 8, 25],
+  'canyon-maple': [250, 190, 10, 15],
+  'villa-madama': [349, 190, 14, 15],
+  'clay-oak': [300, 280, undefined, undefined],
+  'almadin': [259, 200, 14, 25],
+  '21634-longwood': [201, 160, 10, 15],
+  'legend-point': [341, 220, 14, 25],
+  'crimson': [299, 180, 12, 10],
+  'phlox-meadow': [247, 190, 12, 15],
+  'amber-crest': [191, 160, 10, 15],
+  'gallery-wells': [230, 180, 12, 15],
+  'donely': [300, 180, 12, 15],
+  'coral': [200, 180, 12, 15],
+  'wentink': [500, 220, 16, 15],
+  'orchard': [199, 170, 8, 15],
+  'stormy-skies': [219, 170, 8, 15],
+  'lake-valley': [138, 150, 8, 15],
+  'grey-woodpecker': [169, 170, 8, 25],
+  'midvale': [499, 190, 10, 25],
+  'antigua': [210, 170, 8, 25],
+  'oat-st': [195, 180, 6, 20],
+  'rolling': [250, 225, 12, 15],
+  'saffron-plum': [195, 150, 6, 25],
+};
+
 /** Stand-in rates for homes that only sync calendars for now. Replace with the client's numbers per home. */
-function placeholderHome(id: string, name: string): HomeConfig {
+function placeholderHome(id: string, name: string, rate?: Rate): HomeConfig {
+  const [nightly, cleaning, included, extra] = rate ?? [];
   return {
     id,
     name,
     timeZone: 'America/Chicago',
     sources: ['airbnb', 'vrbo'],
     plan: {
-      baseNightly: 20_000,
-      weekendNightly: 25_000,
+      baseNightly: nightly ? nightly * 100 : 20_000,
+      weekendNightly: nightly ? nightly * 100 : 25_000,
       minStay: 2,
       maxNights: 30,
       minNoticeDays: 1,
       bookingWindowDays: 365,
-      cleaningFee: 15_000,
-      maxGuests: 10,
-      includedGuests: 8,
-      extraGuestNightly: 2_000,
+      cleaningFee: cleaning ? cleaning * 100 : 15_000,
+      // Max guests is not in the client's sheet yet, so nobody can book above the included number.
+      maxGuests: included ?? 10,
+      includedGuests: included ?? 8,
+      extraGuestNightly: extra ? extra * 100 : 2_000,
       taxes: [
         { name: 'Texas hotel occupancy tax (6%)', rateBps: 600, appliesTo: ['nights', 'cleaning', 'extraGuests'] },
         { name: 'City and county hotel tax (example 9%)', rateBps: 900, appliesTo: ['nights', 'cleaning', 'extraGuests'] },
@@ -63,16 +98,16 @@ export const HOMES: HomeConfig[] = [
     timeZone: 'America/Chicago',
     sources: ['airbnb', 'vrbo'],
     plan: {
-      baseNightly: 15_000,
-      weekendNightly: 19_000,
+      baseNightly: 17_500,
+      weekendNightly: 17_500,
       minStay: 2,
       maxNights: 30,
       minNoticeDays: 1,
       bookingWindowDays: 365,
-      cleaningFee: 11_000,
+      cleaningFee: 15_000,
       maxGuests: 8,
-      includedGuests: 6,
-      extraGuestNightly: 2_000,
+      includedGuests: 8,
+      extraGuestNightly: 2_500,
       taxes: [
         { name: 'Texas hotel occupancy tax (6%)', rateBps: 600, appliesTo: ['nights', 'cleaning', 'extraGuests'] },
         { name: 'City and county hotel tax (example 9%)', rateBps: 900, appliesTo: ['nights', 'cleaning', 'extraGuests'] },
@@ -115,5 +150,5 @@ export const HOMES: HomeConfig[] = [
     ['marconi-houston', 'Marconi Houston'],
     ['rolling', 'Rolling'],
     ['saffron-plum', 'Saffron Plum'],
-  ].map(([id, name]) => placeholderHome(id!, name!)),
+  ].map(([id, name]) => placeholderHome(id!, name!, RATES[id!])),
 ];
