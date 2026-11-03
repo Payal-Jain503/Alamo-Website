@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { BookingPanel } from '@/components/BookingPanel';
 import { HomeCard } from '@/components/HomeCard';
 import { Photo } from '@/components/Photo';
+import { SaveButton } from '@/components/SaveButton';
 import { PhotoGallery } from '@/components/PhotoGallery';
 import { homeBySlug, homes, homesInCity } from '@/content/homes';
 import { cityBySlug, site } from '@/content/site';
@@ -46,6 +47,7 @@ export default async function HomeDetailPage({ params }: { params: Promise<Param
             <Link href={`/cities/${city.slug}/`}>{city.name}</Link>
           </nav>
           <h1>{home.name}</h1>
+          <SaveButton slug={home.slug} name={home.name} />
           <p className="lede">{home.headline}</p>
         </div>
       </section>

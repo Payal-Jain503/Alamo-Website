@@ -3,6 +3,7 @@ import type { Home } from '@/content/homes';
 import { cityBySlug } from '@/content/site';
 import { Photo } from './Photo';
 import { CardSlider } from './CardSlider';
+import { SaveButton } from './SaveButton';
 
 export function HomeCard({ home }: { home: Home }) {
   const city = cityBySlug(home.city);
@@ -14,6 +15,7 @@ export function HomeCard({ home }: { home: Home }) {
 
   return (
     <article className="home-card">
+      <SaveButton slug={home.slug} name={home.name} className="on-card" />
       <Link href={`/homes/${home.slug}/`} className="home-card-link">
         <div className="home-card-photo">
           {home.photos.length > 1 ? (

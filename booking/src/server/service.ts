@@ -90,6 +90,8 @@ export interface GuestAccount {
   name?: string;
   phone?: string;
   trips: GuestTrip[];
+  /** Home ids the guest has saved. */
+  saved: string[];
 }
 
 export type ApiResult<T> = { status: number; body: T };
@@ -158,7 +160,16 @@ export class BookingService {
       };
     });
     const last = bookings.slice().sort((a, b) => b.confirmedAt.localeCompare(a.confirmedAt))[0];
-    return { status: 200, body: { email, name: last?.guest.name, phone: last?.guest.phone, trips } };
+    const saved = (await this.deps.holds.wishlist(email)).filter((id) => this.home(id));
+    return { status: 200, body: { email, name: last?.guest.name, phone: last?.guest.phone, trips, saved } };
+  }
+
+  /** Replaces the guest's saved homes. Unknown homes are dropped, repeats removed, and the list is capped. */
+  async saveWishlist(email: string, input: unknown): Promise<ApiResult<{ saved: string[] }>> {
+    const ids = Array.isArray(input) ? input : [];
+    const saved = [...new Set(ids.filter((id): id is string => typeof id === 'string' && !!this.home(id)))].slice(0, 100);
+    await this.deps.holds.saveWishlist(email, saved);
+    return { status: 200, body: { saved } };
   }
 
   /** Nights the website calendar shows as taken. No guest or source details leave the server. */
