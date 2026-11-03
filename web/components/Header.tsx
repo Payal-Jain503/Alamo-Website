@@ -54,8 +54,6 @@ export function Header({ homes, cities, phone, phoneHref, email, instagram }: He
     setMenuOpen(false);
   };
 
-  const byCity = cities.map((c) => ({ ...c, homes: homes.filter((h) => h.cityName === c.name) }));
-
   return (
     <>
       <div className="topbar">
@@ -106,19 +104,18 @@ export function Header({ homes, cities, phone, phoneHref, email, instagram }: He
                 Homes
                 <span className="caret" aria-hidden="true" />
               </button>
-              <div id="menu-homes" className={`dropdown${open === 'homes' ? ' show' : ''}`}>
-                {byCity.map((c) => (
-                  <div key={c.slug} className="dropdown-group">
-                    <p>{c.name}</p>
-                    {c.homes.map((h) => (
-                      <Link key={h.slug} href={`/homes/${h.slug}/`} onClick={close}>
-                        {h.name}
-                      </Link>
-                    ))}
-                  </div>
+              <div id="menu-homes" className={`dropdown narrow${open === 'homes' ? ' show' : ''}`}>
+                {[
+                  { label: '3 Bedrooms', value: '3' },
+                  { label: '4 Bedrooms', value: '4' },
+                  { label: '5+ Bedrooms', value: '5' },
+                ].map((b) => (
+                  <Link key={b.value} href={`/homes/?bedrooms=${b.value}`} onClick={close}>
+                    {b.label}
+                  </Link>
                 ))}
                 <Link href="/homes/" className="dropdown-all" onClick={close}>
-                  See all homes
+                  All homes
                 </Link>
               </div>
             </li>
