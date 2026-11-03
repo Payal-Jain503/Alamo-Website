@@ -110,6 +110,21 @@ export const homes: Home[] = [
     photos: ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.jpg', '08.jpg', '09.jpg', '10.jpg'],
   },
   {
+    slug: 'villa-madama',
+    name: 'Villa Madama',
+    city: 'san-antonio',
+    bedrooms: 5,
+    headline: 'A gated five-bedroom San Antonio home with a pool table and a covered deck',
+    description: [
+      'A spacious two-story brick home with five bedrooms, made for family trips and group stays, in a gated community near Highway 281 and Evans.',
+      'There is an open living room, a dining room, a full kitchen and a game area with a pool table upstairs. Outside, a covered back deck looks over the trees.',
+    ],
+    highlights: ['5 bedrooms', 'Pool table and game area', 'Covered back deck with a view', 'Gated community', 'Washer and dryer'],
+    amenities: [...standardAmenities, 'Pool table', 'Covered back deck'],
+    tone: 'adobe',
+    photos: ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.jpg', '08.jpg', '09.jpg', '10.jpg', '11.jpg', '12.jpg', '13.jpg'],
+  },
+  {
     slug: 'austin-home',
     name: 'Austin Home',
     city: 'austin',
