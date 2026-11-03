@@ -72,6 +72,7 @@ function LiveBooking({ slug, blocked, reload }: { slug: string; blocked: Set<str
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState('2');
+  const [pet, setPet] = useState(false);
   const [signed, setSigned] = useState<SignedQuote | null>(null);
   const [quoting, setQuoting] = useState(false);
   const [error, setError] = useState('');
@@ -80,7 +81,7 @@ function LiveBooking({ slug, blocked, reload }: { slug: string; blocked: Set<str
   const [busy, setBusy] = useState(false);
   // A hold this guest already placed. Going back and choosing the same stay reuses it instead of clashing with it.
   const [lastHold, setLastHold] = useState<{ key: string; step: Extract<Step, { name: 'pay' }> } | null>(null);
-  const stayKey = `${checkIn}|${checkOut}|${guests}`;
+  const stayKey = `${checkIn}|${checkOut}|${guests}|${pet}`;
 
   const fetchQuote = useCallback(async () => {
     setSigned(null);
@@ -89,7 +90,7 @@ function LiveBooking({ slug, blocked, reload }: { slug: string; blocked: Set<str
     if (!checkIn || !checkOut || !Number.isInteger(n) || n < 1) return;
     setQuoting(true);
     try {
-      const { body } = await getQuote({ homeId: slug, checkIn, checkOut, guests: n });
+      const { body } = await getQuote({ homeId: slug, checkIn, checkOut, guests: n, pets: pet ? 1 : 0 });
       if (body.signed) setSigned(body.signed);
       else setError(body.error === 'unavailable' ? problemMessage('unavailable') : (body.message ?? problemMessage(body.error ?? '')));
     } catch {
@@ -97,7 +98,7 @@ function LiveBooking({ slug, blocked, reload }: { slug: string; blocked: Set<str
     } finally {
       setQuoting(false);
     }
-  }, [slug, checkIn, checkOut, guests]);
+  }, [slug, checkIn, checkOut, guests, pet]);
 
   useEffect(() => {
     const t = setTimeout(fetchQuote, 250);
@@ -222,6 +223,10 @@ function LiveBooking({ slug, blocked, reload }: { slug: string; blocked: Set<str
       <label>
         <span>Guests</span>
         <input type="number" min={1} max={30} inputMode="numeric" value={guests} onChange={(e) => setGuests(e.target.value)} />
+      </label>
+      <label className="check-row">
+        <input type="checkbox" checked={pet} onChange={(e) => setPet(e.target.checked)} />
+        <span>I&rsquo;m bringing a pet</span>
       </label>
 
       {quoting ? <p className="muted small">Checking the price…</p> : null}
