@@ -371,7 +371,27 @@ textarea { border: 1px solid var(--line); padding: 10px 12px; resize: vertical; 
   gap: 0.6rem;
   cursor: pointer;
 }
+/* The global input reset hides native checkboxes, so draw one. */
 .check-row input[type='checkbox'] {
-  width: auto;
+  flex: none;
+  width: 20px;
+  height: 20px;
   margin: 0;
+  padding: 0;
+  border: 1px solid var(--ink-soft);
+  border-radius: 2px;
+  background: #fff;
+  display: grid;
+  place-content: center;
+  cursor: pointer;
 }
+.check-row input[type='checkbox']::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  transform: scale(0);
+  background: var(--brass);
+}
+.check-row input[type='checkbox']:checked::before { transform: scale(1); }
+.check-row input[type='checkbox']:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+.check-row span { letter-spacing: 0.12em; }
