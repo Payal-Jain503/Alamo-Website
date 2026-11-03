@@ -8,6 +8,32 @@ import type { HomeConfig } from './service.js';
  * fees and tax rates are placeholders until the client confirms them, and
  * the id must match the home's page slug on the website.
  */
+/** Stand-in rates for homes that only sync calendars for now. Replace with the client's numbers per home. */
+function placeholderHome(id: string, name: string): HomeConfig {
+  return {
+    id,
+    name,
+    timeZone: 'America/Chicago',
+    sources: ['airbnb', 'vrbo'],
+    plan: {
+      baseNightly: 20_000,
+      weekendNightly: 25_000,
+      minStay: 2,
+      maxNights: 30,
+      minNoticeDays: 1,
+      bookingWindowDays: 365,
+      cleaningFee: 15_000,
+      maxGuests: 10,
+      includedGuests: 8,
+      extraGuestNightly: 2_000,
+      taxes: [
+        { name: 'Texas hotel occupancy tax (6%)', rateBps: 600, appliesTo: ['nights', 'cleaning', 'extraGuests'] },
+        { name: 'City and county hotel tax (example 9%)', rateBps: 900, appliesTo: ['nights', 'cleaning', 'extraGuests'] },
+      ],
+    },
+  };
+}
+
 export const HOMES: HomeConfig[] = [
   {
     id: 'san-antonio-5-bedroom',
@@ -33,7 +59,7 @@ export const HOMES: HomeConfig[] = [
   },
   {
     id: 'san-antonio-3-bedroom',
-    name: 'San Antonio 3 Bedroom',
+    name: 'Invitation Oak',
     timeZone: 'America/Chicago',
     sources: ['airbnb', 'vrbo'],
     plan: {
@@ -53,4 +79,41 @@ export const HOMES: HomeConfig[] = [
       ],
     },
   },
+  // The rest of the portfolio. Calendars sync for these now; each one gets its real rates before its page goes live.
+  ...[
+    ['hideaway', 'Hideaway'],
+    ['texas-buckeye', 'Texas Buckeye'],
+    ['longhorn-creek', 'Longhorn Creek'],
+    ['sitio-plains', 'Sitio plains'],
+    ['21630-longwood', '21630 Longwood'],
+    ['bender-azim', 'Bender Azim'],
+    ['colt-river', 'Colt River'],
+    ['canyon-maple', 'Canyon Maple'],
+    ['villa-madama', 'Villa Madama'],
+    ['clay-oak', 'Clay Oak'],
+    ['almadin', 'Almadin'],
+    ['21634-longwood', '21634 Longwood'],
+    ['pendant-pass-theater', 'Pendant Pass Theater'],
+    ['legend-point', 'Legend Point'],
+    ['crimson', 'Crimson'],
+    ['phlox-meadow', 'Phlox Meadow'],
+    ['amber-crest', 'Amber Crest'],
+    ['gallery-wells', 'Gallery Wells'],
+    ['westmark-azim', 'Westmark Azim'],
+    ['donely', 'Donely'],
+    ['coral', 'Coral'],
+    ['wentink', 'Wentink'],
+    ['southern-knoll', 'Southern Knoll'],
+    ['orchard', 'Orchard'],
+    ['stormy-skies', 'Stormy Skies'],
+    ['lake-valley', 'Lake Valley'],
+    ['grey-woodpecker', 'Grey Woodpecker'],
+    ['midvale', 'Midvale'],
+    ['antigua', 'Antigua'],
+    ['austin-burton', 'Austin Burton'],
+    ['oat-st', 'Oat St'],
+    ['marconi-houston', 'Marconi Houston'],
+    ['rolling', 'Rolling'],
+    ['saffron-plum', 'Saffron Plum'],
+  ].map(([id, name]) => placeholderHome(id!, name!)),
 ];
