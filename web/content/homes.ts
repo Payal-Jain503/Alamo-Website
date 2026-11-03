@@ -243,6 +243,21 @@ export const homes: Home[] = [
     photos: ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.jpg', '08.jpg', '09.jpg', '10.jpg', '11.jpg', '12.jpg', '13.jpg', '14.jpg', '15.jpg', '16.jpg', '17.jpg', '18.jpg', '19.jpg', '20.jpg', '21.jpg', '22.jpg', '23.jpg', '24.jpg', '25.jpg', '26.jpg', '27.jpg', '28.jpg', '29.jpg', '30.jpg', '31.jpg', '32.jpg', '33.jpg', '34.jpg', '35.jpg', '36.jpg', '37.jpg', '38.jpg', '39.jpg', '40.jpg'],
   },
   {
+    slug: 'hideaway',
+    name: 'Hideaway',
+    city: 'san-antonio',
+    bedrooms: 4,
+    headline: 'A four-bedroom San Antonio home with a 130-inch theater',
+    description: [
+      'A four-bedroom San Antonio home with 6 beds and 3 full bathrooms, with a bedroom downstairs, good for families and groups.',
+      'The home has a 130-inch theater for movie nights.',
+    ],
+    highlights: ['4 bedrooms, 6 beds', '3 full bathrooms', '130-inch theater', 'Bedroom downstairs'],
+    amenities: [...standardAmenities, 'Home theater'],
+    tone: 'sand',
+    photos: ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.jpg', '08.jpg', '09.jpg', '10.jpg', '11.jpg', '12.jpg', '13.jpg', '14.jpg', '15.jpg', '16.jpg', '17.jpg', '18.jpg', '19.jpg', '20.jpg', '21.jpg', '22.jpg', '23.jpg', '24.jpg', '25.jpg', '26.jpg', '27.jpg', '28.jpg', '29.jpg', '30.jpg', '31.jpg', '32.jpg', '33.jpg', '34.jpg', '35.jpg', '36.jpg', '37.jpg', '38.jpg', '39.jpg', '40.jpg'],
+  },
+  {
     slug: 'austin-home',
     name: 'Austin Home',
     city: 'austin',
