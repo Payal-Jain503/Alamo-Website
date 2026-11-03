@@ -114,6 +114,15 @@ export async function handleHttp(service: BookingService, req: HttpRequest, orig
       return json(r.status, r.body);
     }
 
+    if (method === 'PUT' && path === '/api/me/wishlist') {
+      if (!accounts) return json(503, { error: 'accounts-not-set-up' });
+      const token = bearerToken(req.headers.authorization);
+      const email = token ? await accounts.verifier.verify(token) : undefined;
+      if (!email) return json(401, { error: 'sign-in-required' });
+      const r = await service.saveWishlist(email, (parseJson(body) as { homes?: unknown } | undefined)?.homes);
+      return json(r.status, r.body);
+    }
+
     if (method === 'POST' && path === '/api/stripe-webhook') {
       // The signature covers the exact bytes Stripe sent, so the body is passed on unparsed.
       const r = await service.stripeWebhook(body, req.headers['stripe-signature']);

@@ -22,6 +22,7 @@ export interface Account {
   name?: string;
   phone?: string;
   trips: Trip[];
+  saved: string[];
 }
 
 interface Config {
@@ -145,4 +146,15 @@ export async function getAccount(): Promise<Account | null> {
   }
   if (!res.headers.get('content-type')?.includes('application/json') || !res.ok) throw new Error('Your trips are not available right now.');
   return (await res.json()) as Account;
+}
+
+/** Replaces the signed-in guest's saved homes on the server. Quietly does nothing when signed out. */
+export async function putSavedHomes(homes: string[]): Promise<void> {
+  const token = await getToken();
+  if (!token) return;
+  await fetch('/api/me/wishlist', {
+    method: 'PUT',
+    headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+    body: JSON.stringify({ homes }),
+  }).catch(() => undefined);
 }

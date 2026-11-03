@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { confirmCode, getAccount, signOut, startSignIn, type Account } from '@/lib/auth';
 import { usd } from '@/lib/bookingApi';
+import { homeBySlug } from '@/content/homes';
+import { mergeSaved } from '@/lib/saved';
 
 type View = { name: 'loading' } | { name: 'signed-out' } | { name: 'code'; email: string; session: string } | { name: 'in'; account: Account } | { name: 'unavailable' };
 
@@ -19,6 +21,7 @@ export function AccountPanel() {
   const load = async () => {
     try {
       const account = await getAccount();
+      if (account) account.saved = await mergeSaved(account.saved ?? []);
       setView(account ? { name: 'in', account } : { name: 'signed-out' });
     } catch {
       setView({ name: 'unavailable' });
@@ -130,6 +133,15 @@ export function AccountPanel() {
           Sign out
         </button>
       </p>
+      {account.saved.length > 0 && (
+        <div className="trip-group">
+          <h2>Saved homes</h2>
+          {account.saved.flatMap((slug) => {
+            const h = homeBySlug(slug);
+            return h ? [<Link key={slug} className="saved-link" href={`/homes/${slug}/`}>{h.name}</Link>] : [];
+          })}
+        </div>
+      )}
       {account.trips.length === 0 ? (
         <p>No trips yet. Bookings made with this email address will show up here.</p>
       ) : (

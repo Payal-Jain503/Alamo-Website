@@ -122,3 +122,28 @@ test('DynamoDB bookings are indexed by email in lower case and read back newest 
   assert.equal(sent[1]!.input.ExpressionAttributeValues[':email'], 'EMAIL#pat@example.com');
   assert.equal(sent[1]!.input.ScanIndexForward, false);
 });
+
+test('a signed-in guest can save homes, and only real homes are kept', async () => {
+  const { call, service } = await setup();
+  assert.equal((await call('PUT', '/api/me/wishlist', { body: { homes: ['sa'] } })).statusCode, 401);
+  const put = await call('PUT', '/api/me/wishlist', { headers: { authorization: 'Bearer aaa.bbb.good' }, body: { homes: ['sa', 'sa', 'nope', 7] } });
+  assert.equal(put.statusCode, 200);
+  assert.deepEqual(JSON.parse(put.body).saved, ['sa']);
+  assert.deepEqual((await service.account('pat@example.com')).body.saved, ['sa']);
+  assert.deepEqual((await service.account('someone-else@example.com')).body.saved, []);
+});
+
+test('DynamoDB keeps one saved-homes item per email', async () => {
+  const sent: Array<{ name: string; input: Record<string, any> }> = [];
+  const db: Db = {
+    send: (async (c: { constructor: { name: string }; input: Record<string, any> }) => {
+      sent.push({ name: c.constructor.name, input: c.input });
+      return c.constructor.name === 'GetCommand' ? { Item: { homes: ['sa'] } } : {};
+    }) as never,
+  };
+  const repo = new DynamoHoldRepository(db, 'alamo');
+  await repo.saveWishlist(' Pat@Example.com ', ['sa']);
+  assert.deepEqual([sent[0]!.input.Item.pk, sent[0]!.input.Item.sk], ['EMAIL#pat@example.com', 'WISHLIST']);
+  assert.deepEqual(await repo.wishlist('PAT@example.com'), ['sa']);
+  assert.equal(sent[1]!.input.Key.pk, 'EMAIL#pat@example.com');
+});

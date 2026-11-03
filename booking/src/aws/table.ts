@@ -23,6 +23,7 @@ import type { Source } from '../types.js';
  * | HOME#<id>     | FEED#<source>             | what the last sync read       |
  * | HOME#<id>     | ALERTS                    | double bookings already sent  |
  * | HOLD#<id>     | HOLD                      | a checkout in progress        |
+ * | EMAIL#<email> | WISHLIST                  | a guest's saved homes         |
  *
  * Confirmed bookings are also in the `gsi2` index (gsi2pk EMAIL#<guest email>, gsi2sk
  * <check-in>#<id>) so a signed-in guest can list their trips.
@@ -251,6 +252,15 @@ export class DynamoHoldRepository implements HoldRepository {
       ScanIndexForward: false,
     });
     return items.map((i) => i.booking as Booking);
+  }
+
+  async wishlist(email: string) {
+    const r = await this.db.send(new GetCommand({ TableName: this.table, Key: { pk: emailKey(email), sk: 'WISHLIST' } }));
+    return (r.Item?.homes as string[] | undefined) ?? [];
+  }
+
+  async saveWishlist(email: string, homeIds: string[]) {
+    await this.db.send(new PutCommand({ TableName: this.table, Item: { pk: emailKey(email), sk: 'WISHLIST', homes: homeIds } }));
   }
 
   async bookings(homeId: string) {

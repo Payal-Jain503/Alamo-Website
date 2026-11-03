@@ -74,6 +74,9 @@ export interface HoldRepository {
   bookings(homeId: string): Promise<Booking[]>;
   /** Every confirmed booking made with this email address, newest check-in first. */
   bookingsByEmail(email: string): Promise<Booking[]>;
+  /** The home ids a guest has saved, in the order they saved them. */
+  wishlist(email: string): Promise<string[]>;
+  saveWishlist(email: string, homeIds: string[]): Promise<void>;
 }
 
 export interface Notifier {
@@ -291,6 +294,13 @@ export class InMemoryHoldRepository implements HoldRepository {
   }
   async bookings(homeId: string) {
     return [...this.bookingsById.values()].filter((b) => b.homeId === homeId).map((b) => structuredClone(b));
+  }
+  private readonly wishlists = new Map<string, string[]>();
+  async wishlist(email: string) {
+    return [...(this.wishlists.get(email.trim().toLowerCase()) ?? [])];
+  }
+  async saveWishlist(email: string, homeIds: string[]) {
+    this.wishlists.set(email.trim().toLowerCase(), [...homeIds]);
   }
   async bookingsByEmail(email: string) {
     const wanted = email.trim().toLowerCase();
