@@ -170,6 +170,20 @@ export const homes: Home[] = [
     photos: ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.jpg', '08.jpg', '09.jpg', '10.jpg', '11.jpg', '12.jpg', '13.jpg', '14.jpg'],
   },
   {
+    slug: 'westmark-azim',
+    name: 'Westmark Azim',
+    city: 'san-antonio',
+    headline: 'A San Antonio home with four king beds, five TVs and an eight-seat dining table',
+    description: [
+      'A roomy two-story home with 6 beds, including four king beds, and 2.5 bathrooms, good for families and groups.',
+      'The big living room has a leather sectional, a stone fireplace and a large TV. There is an eight-seat dining table, a full kitchen with a breakfast table and bench, and a laundry room with a washer and dryer.',
+    ],
+    highlights: ['6 beds, 4 of them king', '2.5 bathrooms', '5 TVs', 'Eight-seat dining table', 'Stone fireplace'],
+    amenities: [...standardAmenities, 'Fireplace'],
+    tone: 'olive',
+    photos: ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.jpg', '08.jpg', '09.jpg', '10.jpg'],
+  },
+  {
     slug: 'austin-home',
     name: 'Austin Home',
     city: 'austin',
