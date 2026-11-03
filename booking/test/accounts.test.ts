@@ -46,7 +46,7 @@ async function setup() {
   const call = (method: string, path: string, opts: { body?: unknown; headers?: Record<string, string>; withAccounts?: boolean } = {}) =>
     handleHttp(
       service,
-      { rawPath: path, headers: { [ORIGIN_HEADER]: origin, ...opts.headers }, body: opts.body === undefined ? undefined : JSON.stringify(opts.body), requestContext: { http: { method } } },
+      { rawPath: path.split('?')[0]!, queryStringParameters: Object.fromEntries(new URLSearchParams(path.split('?')[1] ?? '')), headers: { [ORIGIN_HEADER]: origin, ...opts.headers }, body: opts.body === undefined ? undefined : JSON.stringify(opts.body), requestContext: { http: { method } } },
       origin,
       opts.withAccounts === false ? undefined : accounts,
     );
@@ -146,4 +146,21 @@ test('DynamoDB keeps one saved-homes item per email', async () => {
   assert.deepEqual([sent[0]!.input.Item.pk, sent[0]!.input.Item.sk], ['EMAIL#pat@example.com', 'WISHLIST']);
   assert.deepEqual(await repo.wishlist('PAT@example.com'), ['sa']);
   assert.equal(sent[1]!.input.Key.pk, 'EMAIL#pat@example.com');
+});
+
+test('a guest can review a finished stay once, and the public list hides emails', async () => {
+  const { call, service } = await setup();
+  const auth = { authorization: 'Bearer aaa.bbb.good' };
+  assert.equal((await call('POST', '/api/me/review', { body: { bookingId: 'b1', rating: 5 } })).statusCode, 401);
+  assert.equal((await call('POST', '/api/me/review', { headers: auth, body: { bookingId: 'b1', rating: 9 } })).statusCode, 400);
+  assert.equal((await call('POST', '/api/me/review', { headers: auth, body: { bookingId: 'b3', rating: 5 } })).statusCode, 404);
+  assert.equal((await call('POST', '/api/me/review', { headers: auth, body: { bookingId: 'b2', rating: 5 } })).statusCode, 409);
+  assert.equal((await call('POST', '/api/me/review', { headers: auth, body: { bookingId: 'b1', rating: 4, comment: ' Lovely ' } })).statusCode, 200);
+  assert.equal((await call('POST', '/api/me/review', { headers: auth, body: { bookingId: 'b1', rating: 5, comment: 'Lovely, again' } })).statusCode, 200);
+  const pub = JSON.parse((await call('GET', '/api/reviews?home=sa')).body);
+  assert.equal(pub.count, 1);
+  assert.equal(pub.average, 5);
+  assert.deepEqual(pub.reviews[0], { name: 'Pat G.', rating: 5, comment: 'Lovely, again', date: '2026-11-03' });
+  const trips = (await service.account('pat@example.com')).body.trips;
+  assert.deepEqual(trips.find((t) => t.bookingId === 'b1')!.review, { rating: 5, comment: 'Lovely, again' });
 });
