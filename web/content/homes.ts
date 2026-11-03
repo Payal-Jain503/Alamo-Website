@@ -125,6 +125,20 @@ export const homes: Home[] = [
     photos: ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.jpg', '08.jpg', '09.jpg', '10.jpg', '11.jpg', '12.jpg', '13.jpg'],
   },
   {
+    slug: 'wentink',
+    name: 'Wentink',
+    city: 'san-antonio',
+    headline: 'A big San Antonio home with a private theater, pool table and poker room',
+    description: [
+      'A large two-story home with 8 beds, made for big family trips, reunions and group stays.',
+      'There is a full kitchen with a long dining table, a living room with a fireplace, a pool table room, and a private movie theater with a 155-inch screen and a poker table. A covered back patio has seating for the group.',
+    ],
+    highlights: ['8 beds', 'Private theater with a 155-inch screen', 'Pool table and poker table', 'Covered back patio', 'Long dining table for the whole group'],
+    amenities: [...standardAmenities, 'Movie theater', 'Pool table', 'Poker table', 'Covered back patio'],
+    tone: 'navy',
+    photos: ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.jpg', '08.jpg', '09.jpg', '10.jpg', '11.jpg', '12.jpg', '13.jpg', '14.jpg'],
+  },
+  {
     slug: 'austin-home',
     name: 'Austin Home',
     city: 'austin',
