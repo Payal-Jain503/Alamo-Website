@@ -75,7 +75,8 @@ export const homes: Home[] = [
     highlights: ['3 bedrooms, all king beds', '2 bathrooms', 'Ping pong table', 'Back deck with a view', 'Garage and driveway parking'],
     amenities: [...standardAmenities, 'Ping pong table', 'Back deck'],
     tone: 'sand',
-    photos: ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.jpg', '08.jpg', '09.jpg', '10.jpg', '11.jpg'],
+    // The two kitchen shots (04, 05) are kept apart so the top grid doesn't repeat itself.
+    photos: ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '06.jpg', '07.jpg', '05.jpg', '08.jpg', '09.jpg', '10.jpg', '11.jpg'],
   },
   {
     slug: 'austin-home',
