@@ -26,6 +26,7 @@ export function HomeSearch({ items, cards, cities }: HomeSearchProps) {
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     setCity(q.get('city') ?? '');
+    setBedrooms(['3', '4', '5'].includes(q.get('bedrooms') ?? '') ? q.get('bedrooms')! : '');
     setGuests(q.get('guests') ?? '');
     setDates({ in: q.get('in') ?? '', out: q.get('out') ?? '' });
   }, []);
@@ -34,7 +35,8 @@ export function HomeSearch({ items, cards, cities }: HomeSearchProps) {
     () =>
       items.filter((h) => {
         if (city && h.city !== city) return false;
-        if (bedrooms && (h.bedrooms ?? 0) < Number(bedrooms)) return false;
+        // 3 and 4 mean exactly that many; 5 means five or more.
+        if (bedrooms && (bedrooms === '5' ? (h.bedrooms ?? 0) < 5 : h.bedrooms !== Number(bedrooms))) return false;
         // Homes without a confirmed guest limit stay in the results.
         if (guests && h.maxGuests !== undefined && h.maxGuests < Number(guests)) return false;
         return true;
@@ -65,9 +67,9 @@ export function HomeSearch({ items, cards, cities }: HomeSearchProps) {
           <span>Bedrooms</span>
           <select id="f-beds" value={bedrooms} onChange={(e) => setBedrooms(e.target.value)}>
             <option value="">Any</option>
-            <option value="3">3+</option>
-            <option value="4">4+</option>
-            <option value="5">5+</option>
+            <option value="3">3 bedrooms</option>
+            <option value="4">4 bedrooms</option>
+            <option value="5">5 or more</option>
           </select>
         </label>
         <label>
