@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { getAccount } from '@/lib/auth';
 import { StayCalendar } from '@/components/StayCalendar';
 import {
   STRIPE_PUBLISHABLE_KEY,
@@ -81,6 +82,18 @@ function LiveBooking({ slug, blocked, reload }: { slug: string; blocked: Set<str
   const [busy, setBusy] = useState(false);
   // A hold this guest already placed. Going back and choosing the same stay reuses it instead of clashing with it.
   const [lastHold, setLastHold] = useState<{ key: string; step: Extract<Step, { name: 'pay' }> } | null>(null);
+  // A signed-in guest gets their name, email and phone filled in from their last booking.
+  useEffect(() => {
+    let live = true;
+    getAccount()
+      .then((a) => {
+        if (live && a) setGuest((g) => ({ name: g.name || a.name || '', email: g.email || a.email, phone: g.phone || a.phone || '' }));
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, []);
   const stayKey = `${checkIn}|${checkOut}|${guests}|${pet}`;
 
   const fetchQuote = useCallback(async () => {

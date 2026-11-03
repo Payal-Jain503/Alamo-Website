@@ -71,6 +71,27 @@ export interface ServiceDeps {
   fetchImpl?: typeof fetch;
 }
 
+export interface GuestTrip {
+  bookingId: string;
+  homeId: string;
+  homeName: string;
+  checkIn: string;
+  checkOut: string;
+  guests: number;
+  totalCents: number;
+  currency: 'usd';
+  confirmedAt: string;
+  status: 'upcoming' | 'past';
+}
+
+export interface GuestAccount {
+  email: string;
+  /** From the guest's most recent booking, to fill in checkout. */
+  name?: string;
+  phone?: string;
+  trips: GuestTrip[];
+}
+
 export type ApiResult<T> = { status: number; body: T };
 
 /** Release reasons the owner should hear about. Expired and abandoned checkouts are normal. */
@@ -116,6 +137,28 @@ export class BookingService {
     ]);
     const held = lockedNights(locks, this.now()).map((night): Block => ({ source: 'direct', kind: 'reservation', uid: `lock-${night}`, start: night, end: addDays(night, 1), summary: 'Held' }));
     return [...Object.values(states).flatMap((s) => s!.blocks), ...bookings.map(bookingBlock), ...held];
+  }
+
+  /** A signed-in guest's trips, newest first, and the details their last booking used. */
+  async account(email: string): Promise<ApiResult<GuestAccount>> {
+    const bookings = await this.deps.holds.bookingsByEmail(email);
+    const trips = bookings.map((b): GuestTrip => {
+      const home = this.home(b.homeId);
+      return {
+        bookingId: b.id,
+        homeId: b.homeId,
+        homeName: home?.name ?? b.homeId,
+        checkIn: b.quote.checkIn,
+        checkOut: b.quote.checkOut,
+        guests: b.quote.guests,
+        totalCents: b.quote.total,
+        currency: b.quote.currency,
+        confirmedAt: b.confirmedAt,
+        status: b.quote.checkOut >= (home ? this.today(home) : dateInTimeZone(this.now(), 'America/Chicago')) ? 'upcoming' : 'past',
+      };
+    });
+    const last = bookings.slice().sort((a, b) => b.confirmedAt.localeCompare(a.confirmedAt))[0];
+    return { status: 200, body: { email, name: last?.guest.name, phone: last?.guest.phone, trips } };
   }
 
   /** Nights the website calendar shows as taken. No guest or source details leave the server. */

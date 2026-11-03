@@ -3,8 +3,8 @@ import { runtime } from './runtime.js';
 
 /** The API behind CloudFront's /api/* and /cal/* paths. */
 export async function api(event: HttpRequest) {
-  const { service, originSecret } = await runtime();
-  return handleHttp(service, event, originSecret);
+  const { service, originSecret, accounts } = await runtime();
+  return handleHttp(service, event, originSecret, accounts);
 }
 
 /** Run by EventBridge Scheduler: `{"job":"sync"}` every 15 minutes, `{"job":"sweep"}` every 5. */

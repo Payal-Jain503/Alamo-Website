@@ -6,6 +6,7 @@ import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
 import * as cwActions from 'aws-cdk-lib/aws-cloudwatch-actions';
+import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
@@ -61,11 +62,39 @@ export class SiteStack extends Stack {
           partitionKey: { name: 'gsi1pk', type: dynamodb.AttributeType.STRING },
           sortKey: { name: 'gsi1sk', type: dynamodb.AttributeType.STRING },
         },
+        {
+          // Confirmed bookings by guest email, for the My trips page.
+          indexName: 'gsi2',
+          partitionKey: { name: 'gsi2pk', type: dynamodb.AttributeType.STRING },
+          sortKey: { name: 'gsi2sk', type: dynamodb.AttributeType.STRING },
+        },
       ],
     });
 
     const alerts = new sns.Topic(this, 'OwnerAlerts', { displayName: 'Alamo City Rental bookings' });
     alerts.addSubscription(new subs.EmailSubscription(props.ownerEmail));
+
+    // Guest accounts: sign in with an emailed 6-digit code, no passwords. Free for the first 10,000 monthly users.
+    // Cognito's built-in sender is limited to 50 emails a day; switch it to SES once the domain's sender is verified.
+    const userPool = new cognito.UserPool(this, 'Guests', {
+      featurePlan: cognito.FeaturePlan.ESSENTIALS,
+      selfSignUpEnabled: false,
+      signInAliases: { email: true },
+      signInCaseSensitive: false,
+      autoVerify: { email: true },
+      signInPolicy: { allowedFirstAuthFactors: { password: true, emailOtp: true } },
+      accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
+      deletionProtection: true,
+      removalPolicy: RemovalPolicy.RETAIN,
+    });
+    const userPoolClient = userPool.addClient('Web', {
+      generateSecret: false,
+      disableOAuth: true,
+      authFlows: { user: true },
+      idTokenValidity: Duration.hours(1),
+      refreshTokenValidity: Duration.days(30),
+      preventUserExistenceErrors: true,
+    });
 
     const bookingDir = repoPath('booking');
     const common: NodejsFunctionProps = {
@@ -75,7 +104,7 @@ export class SiteStack extends Stack {
       runtime: lambda.Runtime.NODEJS_22_X,
       architecture: lambda.Architecture.ARM_64,
       memorySize: 512,
-      environment: { TABLE_NAME: table.tableName, ALERT_TOPIC_ARN: alerts.topicArn, PARAMETER_PREFIX: prefix, NODE_OPTIONS: '--enable-source-maps' },
+      environment: { TABLE_NAME: table.tableName, USER_POOL_ID: userPool.userPoolId, USER_POOL_CLIENT_ID: userPoolClient.userPoolClientId, ALERT_TOPIC_ARN: alerts.topicArn, PARAMETER_PREFIX: prefix, NODE_OPTIONS: '--enable-source-maps' },
       bundling: {
         format: OutputFormat.ESM,
         target: 'node22',
@@ -122,6 +151,9 @@ export class SiteStack extends Stack {
         }),
       );
     }
+
+    // The API prepares a guest's user (without sending anything) before the browser asks Cognito for the code.
+    userPool.grant(api, 'cognito-idp:AdminCreateUser');
 
     new events.Rule(this, 'SyncEvery15Minutes', {
       schedule: events.Schedule.rate(Duration.minutes(15)),
@@ -214,5 +246,6 @@ function handler(event) {
     new CfnOutput(this, 'CloudFrontDomain', { value: distribution.distributionDomainName, description: 'Point the domain’s DNS (CNAME or alias) here' });
     new CfnOutput(this, 'StripeWebhookUrl', { value: `https://${props.domainNames?.[0] ?? distribution.distributionDomainName}/api/stripe-webhook` });
     new CfnOutput(this, 'TableName', { value: table.tableName });
+    new CfnOutput(this, 'GuestUserPoolId', { value: userPool.userPoolId });
   }
 }
