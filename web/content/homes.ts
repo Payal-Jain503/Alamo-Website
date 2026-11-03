@@ -88,11 +88,26 @@ export const homes: Home[] = [
       'A spacious home with four bedrooms, made for family trips and group stays.',
       'The open living room, dining room and full kitchen are made for gathering, and there is a pool table with a bar, a back patio, and a private movie theater with a big screen and reclining leather seats.',
     ],
-    highlights: ['4 bedrooms', 'Private movie theater', 'Pool table and bar', 'Back patio', 'Washer and dryer'],
+    highlights: ['4 bedrooms', 'Private theater with a 155-inch screen and 10 seats', 'Pool table and bar', 'Back patio', 'Washer and dryer'],
     amenities: [...standardAmenities, 'Movie theater', 'Pool table', 'Back patio'],
     tone: 'navy',
     // Theater and pool table are the standout rooms, so they sit in the top grid.
     photos: ['01.jpg', '06.jpg', '02.jpg', '05.jpg', '03.jpg', '04.jpg', '07.jpg', '08.jpg', '09.jpg', '10.jpg', '11.jpg', '12.jpg', '13.jpg', '14.jpg'],
+  },
+  {
+    slug: 'bender-azim',
+    name: 'Bender Azim',
+    city: 'san-antonio',
+    bedrooms: 4,
+    headline: 'A four-bedroom home in the Medical Center area with a pool table and game room',
+    description: [
+      'A comfortable four-bedroom home close to the Medical Center, good for families, traveling medical staff and small groups.',
+      'The open living room has a big TV and recliners, there is a dining table and a full kitchen, and a game room with a pool table and TV.',
+    ],
+    highlights: ['4 bedrooms', 'Pool table and game room', 'Near the Medical Center', 'Full kitchen', 'TV in the bedrooms'],
+    amenities: [...standardAmenities, 'Pool table', 'Game room'],
+    tone: 'stone',
+    photos: ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.jpg', '08.jpg', '09.jpg', '10.jpg'],
   },
   {
     slug: 'austin-home',
