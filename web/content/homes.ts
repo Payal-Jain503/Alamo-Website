@@ -184,6 +184,20 @@ export const homes: Home[] = [
     photos: ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.jpg', '08.jpg', '09.jpg', '10.jpg'],
   },
   {
+    slug: 'sitio-plains',
+    name: 'Sitio Plains',
+    city: 'san-antonio',
+    headline: 'A four-bed San Antonio home with a fenced backyard and a Tesla charger',
+    description: [
+      'A comfortable home with 4 beds and 2 bathrooms, good for families and small groups, with a fully fenced backyard.',
+      'The open living area has a leather sofa set and a big TV, there is a dining table, a full kitchen with an island, and a laundry room with a washer and dryer. A Tesla charger is available for guests.',
+    ],
+    highlights: ['4 beds, 2 bathrooms', 'Fully fenced backyard', 'Tesla charger', 'Kitchen with island', 'TV in the bedrooms'],
+    amenities: [...standardAmenities, 'Fenced backyard', 'Tesla charger'],
+    tone: 'sand',
+    photos: ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.jpg', '08.jpg', '09.jpg', '10.jpg'],
+  },
+  {
     slug: 'austin-home',
     name: 'Austin Home',
     city: 'austin',
