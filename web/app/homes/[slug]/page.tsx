@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { BookingPanel } from '@/components/BookingPanel';
 import { HomeCard } from '@/components/HomeCard';
 import { Photo } from '@/components/Photo';
+import { PhotoGallery } from '@/components/PhotoGallery';
 import { homeBySlug, homes, homesInCity } from '@/content/homes';
 import { cityBySlug, site } from '@/content/site';
 
@@ -33,7 +34,7 @@ export default async function HomeDetailPage({ params }: { params: Promise<Param
     home.maxGuests && { label: 'Guests', value: home.maxGuests },
   ].filter(Boolean) as { label: string; value: number }[];
 
-  const gallery = Array.from({ length: GALLERY_SLOTS }, (_, i) => home.photos[i]);
+  const gallery = Array.from({ length: GALLERY_SLOTS }, (_, i) => i);
 
   return (
     <>
@@ -49,36 +50,17 @@ export default async function HomeDetailPage({ params }: { params: Promise<Param
         </div>
       </section>
 
-      <section className="wrap gallery" aria-label="Photos">
-        {gallery.map((file, i) => (
-          <div key={i} className={`gallery-item g${i}`}>
-            <Photo
-              src={file ? `photos/${home.slug}/${file}` : undefined}
-              alt={`${home.name}, photo ${i + 1}`}
-              tone={home.tone}
-              priority={i === 0}
-              label={i === 0 ? 'Photos coming soon' : ''}
-            />
-          </div>
-        ))}
-        {home.photos.length > GALLERY_SLOTS ? (
-          <details className="gallery-more">
-            <summary>See all {home.photos.length} photos</summary>
-            <div className="gallery-all">
-              {/* Photos 4 and 5 are hidden in the top grid on phones, so they appear here on phones only. */}
-              {home.photos.slice(3).map((file, i) => (
-                <Photo
-                  key={file}
-                  src={`photos/${home.slug}/${file}`}
-                  alt={`${home.name}, photo ${4 + i}`}
-                  tone={home.tone}
-                  className={i < 2 ? 'only-mobile' : ''}
-                />
-              ))}
+      {home.photos.length ? (
+        <PhotoGallery name={home.name} slug={home.slug} photos={home.photos} />
+      ) : (
+        <section className="wrap gallery" aria-label="Photos">
+          {gallery.map((_, i) => (
+            <div key={i} className={`gallery-item g${i}`}>
+              <Photo alt={`${home.name}, photo ${i + 1}`} tone={home.tone} priority={i === 0} label={i === 0 ? 'Photos coming soon' : ''} />
             </div>
-          </details>
-        ) : null}
-      </section>
+          ))}
+        </section>
+      )}
 
       <section className="section tight">
         <div className="wrap detail-grid">
