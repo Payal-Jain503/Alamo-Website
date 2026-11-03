@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { BookingPanel } from '@/components/BookingPanel';
 import { HomeCard } from '@/components/HomeCard';
 import { Photo } from '@/components/Photo';
+import { HomeReviews } from '@/components/HomeReviews';
 import { SaveButton } from '@/components/SaveButton';
 import { PhotoGallery } from '@/components/PhotoGallery';
 import { homeBySlug, homes, homesInCity } from '@/content/homes';
@@ -125,6 +126,8 @@ export default async function HomeDetailPage({ params }: { params: Promise<Param
           <BookingPanel slug={home.slug} homeName={home.name} phone={site.phone} />
         </div>
       </section>
+
+      <HomeReviews slug={home.slug} />
 
       {others.length ? (
         <section className="section tinted">

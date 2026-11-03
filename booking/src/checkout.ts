@@ -63,6 +63,17 @@ export interface LiveCalendar {
   externalBlocks(homeId: string): Promise<{ fresh: boolean; blocks: Block[] }>;
 }
 
+/** A guest's review of a stay. One per booking; saving again replaces it. */
+export interface Review {
+  bookingId: string;
+  homeId: string;
+  /** Shown publicly: first name and last initial. */
+  name: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
 export interface HoldRepository {
   create(hold: Hold): Promise<void>;
   get(id: string): Promise<Hold | undefined>;
@@ -77,6 +88,9 @@ export interface HoldRepository {
   /** The home ids a guest has saved, in the order they saved them. */
   wishlist(email: string): Promise<string[]>;
   saveWishlist(email: string, homeIds: string[]): Promise<void>;
+  saveReview(review: Review): Promise<void>;
+  /** Every review of a home, newest first. */
+  reviews(homeId: string): Promise<Review[]>;
 }
 
 export interface Notifier {
@@ -294,6 +308,13 @@ export class InMemoryHoldRepository implements HoldRepository {
   }
   async bookings(homeId: string) {
     return [...this.bookingsById.values()].filter((b) => b.homeId === homeId).map((b) => structuredClone(b));
+  }
+  private readonly reviewsById = new Map<string, Review>();
+  async saveReview(review: Review) {
+    this.reviewsById.set(review.bookingId, structuredClone(review));
+  }
+  async reviews(homeId: string) {
+    return [...this.reviewsById.values()].filter((r) => r.homeId === homeId).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map((r) => structuredClone(r));
   }
   private readonly wishlists = new Map<string, string[]>();
   async wishlist(email: string) {

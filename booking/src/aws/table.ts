@@ -6,7 +6,7 @@ import {
   TransactWriteCommand,
   type DynamoDBDocumentClient,
 } from '@aws-sdk/lib-dynamodb';
-import type { Booking, Hold, HoldRepository, HoldStatus } from '../checkout.js';
+import type { Booking, Hold, HoldRepository, HoldStatus, Review } from '../checkout.js';
 import { eachNight } from '../dates.js';
 import type { ClaimResult, NightLock, NightStore } from '../holds.js';
 import type { FeedStore } from '../server/service.js';
@@ -20,6 +20,7 @@ import type { Source } from '../types.js';
  * | ------------- | ------------------------- | ----------------------------- |
  * | HOME#<id>     | NIGHT#<date>              | the lock on one night         |
  * | HOME#<id>     | BOOKING#<check-in>#<id>   | a confirmed booking           |
+ * | HOME#<id>     | REVIEW#<booking id>       | a guest's review of a stay    |
  * | HOME#<id>     | FEED#<source>             | what the last sync read       |
  * | HOME#<id>     | ALERTS                    | double bookings already sent  |
  * | HOLD#<id>     | HOLD                      | a checkout in progress        |
@@ -252,6 +253,19 @@ export class DynamoHoldRepository implements HoldRepository {
       ScanIndexForward: false,
     });
     return items.map((i) => i.booking as Booking);
+  }
+
+  async saveReview(review: Review) {
+    await this.db.send(new PutCommand({ TableName: this.table, Item: { pk: homeKey(review.homeId), sk: `REVIEW#${review.bookingId}`, review } }));
+  }
+
+  async reviews(homeId: string) {
+    const items = await queryAll(this.db, {
+      TableName: this.table,
+      KeyConditionExpression: 'pk = :pk AND begins_with(sk, :review)',
+      ExpressionAttributeValues: { ':pk': homeKey(homeId), ':review': 'REVIEW#' },
+    });
+    return items.map((i) => i.review as Review).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
   async wishlist(email: string) {

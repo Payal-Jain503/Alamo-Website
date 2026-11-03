@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { confirmCode, getAccount, signOut, startSignIn, type Account } from '@/lib/auth';
 import { usd } from '@/lib/bookingApi';
 import { homeBySlug } from '@/content/homes';
+import { ReviewForm } from './ReviewForm';
 import { mergeSaved } from '@/lib/saved';
 
 type View = { name: 'loading' } | { name: 'signed-out' } | { name: 'code'; email: string; session: string } | { name: 'in'; account: Account } | { name: 'unavailable' };
@@ -116,6 +117,7 @@ export function AccountPanel() {
                 {shortDate(t.checkIn)} to {shortDate(t.checkOut)} · {t.guests} {t.guests === 1 ? 'guest' : 'guests'} · {usd(t.totalCents)}
               </p>
               <p className="muted small">Confirmation {t.bookingId}</p>
+              {t.status === 'past' && <ReviewForm trip={t} />}
             </div>
             <Link className="btn btn-ghost" href={`/homes/${t.homeId}/`}>
               View home

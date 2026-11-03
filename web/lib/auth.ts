@@ -15,6 +15,7 @@ export interface Trip {
   currency: 'usd';
   confirmedAt: string;
   status: 'upcoming' | 'past';
+  review?: { rating: number; comment: string };
 }
 
 export interface Account {
@@ -157,4 +158,16 @@ export async function putSavedHomes(homes: string[]): Promise<void> {
     headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
     body: JSON.stringify({ homes }),
   }).catch(() => undefined);
+}
+
+/** Saves the signed-in guest's review of a finished stay. */
+export async function sendReview(bookingId: string, rating: number, comment: string): Promise<void> {
+  const token = await getToken();
+  if (!token) throw new Error('Please sign in again.');
+  const res = await fetch('/api/me/review', {
+    method: 'POST',
+    headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+    body: JSON.stringify({ bookingId, rating, comment }),
+  });
+  if (!res.ok) throw new Error('Your review could not be saved. Please try again.');
 }

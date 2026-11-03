@@ -114,6 +114,21 @@ export async function handleHttp(service: BookingService, req: HttpRequest, orig
       return json(r.status, r.body);
     }
 
+    if (method === 'GET' && path === '/api/reviews') {
+      if (!HOME_ID.test(query.home ?? '')) return json(400, { error: 'bad-request' });
+      const r = await service.reviews(query.home!);
+      return { ...json(r.status, r.body), headers: { 'content-type': 'application/json', 'cache-control': 'public, max-age=60' } };
+    }
+
+    if (method === 'POST' && path === '/api/me/review') {
+      if (!accounts) return json(503, { error: 'accounts-not-set-up' });
+      const token = bearerToken(req.headers.authorization);
+      const email = token ? await accounts.verifier.verify(token) : undefined;
+      if (!email) return json(401, { error: 'sign-in-required' });
+      const r = await service.submitReview(email, parseJson(body) as never);
+      return json(r.status, r.body);
+    }
+
     if (method === 'PUT' && path === '/api/me/wishlist') {
       if (!accounts) return json(503, { error: 'accounts-not-set-up' });
       const token = bearerToken(req.headers.authorization);

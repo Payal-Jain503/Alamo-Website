@@ -9,6 +9,7 @@ import {
   type CheckoutDeps,
   type Guest,
   type HoldRepository,
+  type Review,
   type LiveCalendar,
   type Notifier,
   type PaymentGateway,
@@ -82,6 +83,8 @@ export interface GuestTrip {
   currency: 'usd';
   confirmedAt: string;
   status: 'upcoming' | 'past';
+  /** The guest's review of this stay, once written. */
+  review?: { rating: number; comment: string };
 }
 
 export interface GuestAccount {
@@ -144,6 +147,8 @@ export class BookingService {
   /** A signed-in guest's trips, newest first, and the details their last booking used. */
   async account(email: string): Promise<ApiResult<GuestAccount>> {
     const bookings = await this.deps.holds.bookingsByEmail(email);
+    const mine = new Map<string, Review>();
+    for (const id of new Set(bookings.map((b) => b.homeId))) for (const r of await this.deps.holds.reviews(id)) mine.set(r.bookingId, r);
     const trips = bookings.map((b): GuestTrip => {
       const home = this.home(b.homeId);
       return {
@@ -156,12 +161,36 @@ export class BookingService {
         totalCents: b.quote.total,
         currency: b.quote.currency,
         confirmedAt: b.confirmedAt,
+        review: mine.has(b.id) ? { rating: mine.get(b.id)!.rating, comment: mine.get(b.id)!.comment } : undefined,
         status: b.quote.checkOut >= (home ? this.today(home) : dateInTimeZone(this.now(), 'America/Chicago')) ? 'upcoming' : 'past',
       };
     });
     const last = bookings.slice().sort((a, b) => b.confirmedAt.localeCompare(a.confirmedAt))[0];
     const saved = (await this.deps.holds.wishlist(email)).filter((id) => this.home(id));
     return { status: 200, body: { email, name: last?.guest.name, phone: last?.guest.phone, trips, saved } };
+  }
+
+  /** Public reviews of a home, newest first, with the average rating. Guest emails never leave the server. */
+  async reviews(homeId: string): Promise<ApiResult<{ count: number; average: number | null; reviews: Array<{ name: string; rating: number; comment: string; date: string }> } | { error: string }>> {
+    if (!this.home(homeId)) return { status: 404, body: { error: 'unknown-home' } };
+    const all = await this.deps.holds.reviews(homeId);
+    const average = all.length ? Math.round((all.reduce((s, r) => s + r.rating, 0) / all.length) * 10) / 10 : null;
+    return { status: 200, body: { count: all.length, average, reviews: all.map((r) => ({ name: r.name, rating: r.rating, comment: r.comment, date: r.createdAt.slice(0, 10) })) } };
+  }
+
+  /** A guest reviews one of their own stays, once it has ended. */
+  async submitReview(email: string, input: { bookingId?: unknown; rating?: unknown; comment?: unknown } | undefined): Promise<ApiResult<{ ok: true } | { error: string }>> {
+    const rating = input?.rating;
+    const comment = typeof input?.comment === 'string' ? input.comment.trim() : '';
+    if (typeof rating !== 'number' || !Number.isInteger(rating) || rating < 1 || rating > 5 || comment.length > 1000) return { status: 400, body: { error: 'bad-review' } };
+    const booking = (await this.deps.holds.bookingsByEmail(email)).find((b) => b.id === input?.bookingId);
+    if (!booking) return { status: 404, body: { error: 'unknown-booking' } };
+    const home = this.home(booking.homeId);
+    if (!home || booking.quote.checkOut >= this.today(home)) return { status: 409, body: { error: 'stay-not-finished' } };
+    const [first = 'Guest', ...rest] = booking.guest.name.trim().split(/\s+/);
+    const name = rest.length ? `${first} ${rest[rest.length - 1]![0]!.toUpperCase()}.` : first;
+    await this.deps.holds.saveReview({ bookingId: booking.id, homeId: booking.homeId, name, rating, comment, createdAt: this.now().toISOString() });
+    return { status: 200, body: { ok: true } };
   }
 
   /** Replaces the guest's saved homes. Unknown homes are dropped, repeats removed, and the list is capped. */
