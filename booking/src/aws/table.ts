@@ -10,6 +10,7 @@ import type { Booking, Hold, HoldRepository, HoldStatus, Review } from '../check
 import { eachNight } from '../dates.js';
 import type { ClaimResult, NightLock, NightStore } from '../holds.js';
 import type { FeedStore } from '../server/service.js';
+import type { RateStore, StoredRates } from '../pricelabs.js';
 import type { FeedState } from '../sync.js';
 import type { Source } from '../types.js';
 
@@ -21,6 +22,7 @@ import type { Source } from '../types.js';
  * | HOME#<id>     | NIGHT#<date>              | the lock on one night         |
  * | HOME#<id>     | BOOKING#<check-in>#<id>   | a confirmed booking           |
  * | HOME#<id>     | REVIEW#<booking id>       | a guest's review of a stay    |
+ * | HOME#<id>     | RATES                     | PriceLabs prices, per night   |
  * | HOME#<id>     | FEED#<source>             | what the last sync read       |
  * | HOME#<id>     | ALERTS                    | double bookings already sent  |
  * | HOLD#<id>     | HOLD                      | a checkout in progress        |
@@ -316,5 +318,22 @@ export class DynamoFeedStore implements FeedStore {
 
   async saveReportedDoubleBookings(homeId: string, keys: string[]) {
     await this.db.send(new PutCommand({ TableName: this.table, Item: { pk: homeKey(homeId), sk: 'ALERTS', doubleBookings: keys } }));
+  }
+}
+
+/** The latest PriceLabs prices for each home. */
+export class DynamoRateStore implements RateStore {
+  constructor(
+    private readonly db: Db,
+    private readonly table: string,
+  ) {}
+
+  async load(homeId: string) {
+    const { Item } = await this.db.send(new GetCommand({ TableName: this.table, Key: { pk: homeKey(homeId), sk: 'RATES' } }));
+    return Item?.rates as StoredRates | undefined;
+  }
+
+  async save(homeId: string, rates: StoredRates) {
+    await this.db.send(new PutCommand({ TableName: this.table, Item: { pk: homeKey(homeId), sk: 'RATES', rates } }));
   }
 }

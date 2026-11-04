@@ -7,12 +7,17 @@ export async function api(event: HttpRequest) {
   return handleHttp(service, event, originSecret, accounts);
 }
 
-/** Run by EventBridge Scheduler: `{"job":"sync"}` every 15 minutes, `{"job":"sweep"}` every 5. */
+/** Run by EventBridge Scheduler: `{"job":"sync"}` every 15 minutes, `{"job":"rates"}` every hour, `{"job":"sweep"}` every 5. */
 export async function jobs(event: { job?: string }) {
   const { service } = await runtime();
   if (event.job === 'sync') {
     const summary = await service.syncAll();
     console.log(JSON.stringify({ job: 'sync', summary }));
+    return summary;
+  }
+  if (event.job === 'rates') {
+    const summary = await service.syncRates();
+    console.log(JSON.stringify({ job: 'rates', summary }));
     return summary;
   }
   if (event.job === 'sweep') {

@@ -11,7 +11,8 @@ import { BookingService, type Alerts, type Secrets } from '../server/service.js'
 import { HOMES } from '../server/homes.js';
 import { StripeGateway } from '../stripe.js';
 import type { Source } from '../types.js';
-import { DynamoFeedStore, DynamoHoldRepository, DynamoNightStore } from './table.js';
+import { DynamoFeedStore, DynamoHoldRepository, DynamoNightStore, DynamoRateStore } from './table.js';
+import { PriceLabsClient } from '../pricelabs.js';
 
 /**
  * Builds the booking service from the Lambda environment. Secrets live in
@@ -24,6 +25,7 @@ import { DynamoFeedStore, DynamoHoldRepository, DynamoNightStore } from './table
  *   /alamo-web/origin-secret            32+ random characters, also set on CloudFront
  *   /alamo-web/ical/<home-id>/airbnb    the home's Airbnb iCal link
  *   /alamo-web/ical/<home-id>/vrbo      the home's VRBO iCal link
+ *   /alamo-web/pricelabs-api-key        PriceLabs Customer API key (optional; homes use their plan rates without it)
  *
  * They are read once per cold start and cached for 5 minutes.
  */
@@ -129,6 +131,7 @@ async function build(): Promise<Runtime> {
     feeds: new DynamoFeedStore(db, table),
     payments: params.get('stripe/secret-key') ? new StripeGateway(params.get('stripe/secret-key')!) : paymentsNotSetUp,
     alerts,
+    rates: params.get('pricelabs-api-key') ? { client: new PriceLabsClient(params.get('pricelabs-api-key')!.trim()), store: new DynamoRateStore(db, table) } : undefined,
     guestMail,
     contact: { email: fromAddress },
     secrets: {
