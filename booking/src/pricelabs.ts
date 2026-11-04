@@ -103,7 +103,10 @@ export function matchListings(homes: Array<{ id: string; name: string }>, listin
   for (const home of homes) {
     const keys = [norm(home.name), norm(home.id)].filter((k) => k.length >= 4);
     const hits = listings.filter((l) => [norm(l.name), norm(l.propertyName)].some((n) => n && keys.some((k) => n.includes(k) || k.includes(n))));
-    if (hits.length === 1) matched.set(home.id, hits[0]!);
+    // A home listed on both Airbnb and VRBO shows up twice; the Airbnb listing is the one we price from.
+    const airbnb = hits.filter((l) => l.pms.toLowerCase().includes('airbnb'));
+    const pick = hits.length === 1 ? hits[0] : airbnb.length === 1 ? airbnb[0] : undefined;
+    if (pick) matched.set(home.id, pick);
     else unmatched.push(`${home.name}${hits.length > 1 ? ` (${hits.length} listings match)` : ''}`);
   }
   return { matched, unmatched };
