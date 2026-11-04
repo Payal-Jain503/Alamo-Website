@@ -24,8 +24,10 @@ test('listings match homes by name, and an unclear match is left out', () => {
   assert.equal(matched.get('clay-oak')!.id, 'L2');
   assert.deepEqual(unmatched, ['Oat St']);
   const twice = matchListings([home], [...listings, { id: 'L3', pms: 'vrbo', name: 'Crimson Star again', propertyName: '' }]);
-  assert.equal(twice.matched.size, 0);
-  assert.match(twice.unmatched[0]!, /2 listings match/);
+  assert.equal(twice.matched.get('crimson')!.id, 'L1');
+  const clash = matchListings([home], [...listings, { id: 'L4', pms: 'airbnb', name: 'Crimson Star again', propertyName: '' }]);
+  assert.equal(clash.matched.size, 0);
+  assert.match(clash.unmatched[0]!, /2 listings match/);
 });
 
 test('prices become cents, and days without a price are dropped', () => {
