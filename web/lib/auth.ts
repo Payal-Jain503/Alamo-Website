@@ -14,7 +14,8 @@ export interface Trip {
   totalCents: number;
   currency: 'usd';
   confirmedAt: string;
-  status: 'upcoming' | 'past';
+  status: 'upcoming' | 'past' | 'cancelled';
+  refundCents?: number;
   review?: { rating: number; comment: string };
 }
 
@@ -170,4 +171,17 @@ export async function sendReview(bookingId: string, rating: number, comment: str
     body: JSON.stringify({ bookingId, rating, comment }),
   });
   if (!res.ok) throw new Error('Your review could not be saved. Please try again.');
+}
+
+/** Cancels an upcoming booking. Returns how much goes back to the guest's card, in cents. */
+export async function cancelTrip(bookingId: string): Promise<number> {
+  const token = await getToken();
+  if (!token) throw new Error('Please sign in again.');
+  const res = await fetch('/api/me/cancel', {
+    method: 'POST',
+    headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+    body: JSON.stringify({ bookingId }),
+  });
+  if (!res.ok) throw new Error('This booking could not be cancelled online. Please contact us.');
+  return ((await res.json()) as { refundCents: number }).refundCents;
 }

@@ -59,6 +59,9 @@ const paymentsNotSetUp: PaymentGateway = {
   cancel: async () => {
     throw new Error('Stripe is not set up yet');
   },
+  refund: async () => {
+    throw new Error('Stripe is not set up yet');
+  },
 };
 
 const env = (name: string) => {
