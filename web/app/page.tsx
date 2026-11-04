@@ -11,19 +11,19 @@ const slides: Slide[] = [
     eyebrow: 'Stay',
     title: 'Spacious holiday homes across Texas',
     text: 'Three, four and five bedroom homes in San Antonio, Austin and Houston, ready for families and groups.',
-    media: <Photo src="photos/hero/stay.jpg" alt="Living room in an Alamo City Rental home" tone="navy" priority label="Hero photo coming soon" />,
+    media: <Photo src="photos/hero/stay.jpg" alt="Living room in an Alamo City Rental home" tone="navy" priority />,
   },
   {
     eyebrow: 'Gather',
     title: 'Everyone under one roof',
     text: 'Big kitchens, long tables and room to spread out, for reunions, celebrations and team trips.',
-    media: <Photo src="photos/hero/gather.jpg" alt="Dining table set for a group" tone="olive" label="Hero photo coming soon" />,
+    media: <Photo src="photos/hero/gather.jpg" alt="Open kitchen and living area ready for a group" tone="olive" />,
   },
   {
     eyebrow: 'Explore',
     title: 'The Texas you came for',
     text: 'Minutes from the River Walk, Austin’s live music and Houston’s museums. We’ll point you to the best of it.',
-    media: <Photo src="photos/hero/explore.jpg" alt="San Antonio River Walk at dusk" tone="adobe" label="Hero photo coming soon" />,
+    media: <Photo src="photos/hero/explore.jpg" alt="Backyard pool at an Alamo City Rental home" tone="adobe" />,
   },
 ];
 
