@@ -24,6 +24,7 @@ export function Footer() {
           <p className="footer-head">Stay with us</p>
           <Link href="/homes/">All homes</Link>
           <Link href="/policies/">Policies</Link>
+          <Link href="/terms/">Terms</Link>
           <Link href="/privacy/">Privacy</Link>
           <Link href="/about/">About us</Link>
           <Link href="/contact/">Contact</Link>

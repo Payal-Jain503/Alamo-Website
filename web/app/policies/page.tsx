@@ -27,7 +27,7 @@ const sections = [
   },
   {
     title: 'Check-in and check-out',
-    items: ['Check-in and check-out times: to be confirmed.', 'Self check-in details are sent before arrival.'],
+    items: ['Check-in is any time after 3:00 PM.', 'Check-out is by 11:00 AM.', 'Self check-in details are sent before arrival.'],
   },
   {
     title: 'House rules',

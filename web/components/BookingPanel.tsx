@@ -287,6 +287,16 @@ function LiveBooking({ slug, blocked, reload }: { slug: string; blocked: Set<str
             <span>Phone (optional)</span>
             <input type="tel" autoComplete="tel" value={guest.phone} onChange={(e) => setGuest({ ...guest, phone: e.target.value })} />
           </label>
+          <label className="check">
+            <input type="checkbox" required />
+            <span>
+              I agree to the{' '}
+              <a href="/terms/" target="_blank" rel="noreferrer">
+                Terms, damage waiver and indemnification
+              </a>
+              .
+            </span>
+          </label>
           <button type="submit" className="btn btn-solid wide" disabled={busy || !q}>
             {busy ? 'Holding your dates…' : 'Continue to payment'}
           </button>
