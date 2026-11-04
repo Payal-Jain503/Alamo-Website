@@ -4,7 +4,7 @@ export const site = {
   tagline: 'Holiday homes across Texas',
   phone: '(210) 901-9440',
   phoneHref: 'tel:+12109019440',
-  email: 'alamocityrental210@gmail.com',
+  email: 'Bnbbyzo@gmail.com',
   /** Add the Instagram profile link here once confirmed; the link is hidden while empty. */
   instagram: '',
   url: 'https://alamocityrental.com',
