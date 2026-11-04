@@ -53,6 +53,10 @@ export class StripeGateway implements PaymentGateway {
     await this.call(`payment_intents/${encodeURIComponent(paymentId)}/capture`, {}, idempotencyKey);
   }
 
+  async refund(paymentId: string, amount: number, idempotencyKey: string) {
+    await this.call('refunds', { payment_intent: paymentId, amount: String(amount) }, idempotencyKey);
+  }
+
   async cancel(paymentId: string, idempotencyKey: string) {
     try {
       await this.call(`payment_intents/${encodeURIComponent(paymentId)}/cancel`, {}, idempotencyKey);

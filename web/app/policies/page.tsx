@@ -19,7 +19,11 @@ const sections = [
   },
   {
     title: 'Cancellations and refunds',
-    items: ['Refund windows: to be confirmed.', 'Refunds go back to the original payment method.'],
+    items: [
+      'Cancel 5 or more days before check-in for a full refund.',
+      'Cancel less than 5 days before check-in for a 50% refund.',
+      'Refunds go back to the original payment method.',
+    ],
   },
   {
     title: 'Check-in and check-out',

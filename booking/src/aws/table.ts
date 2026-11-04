@@ -285,7 +285,8 @@ export class DynamoHoldRepository implements HoldRepository {
       KeyConditionExpression: 'pk = :pk AND begins_with(sk, :booking)',
       ExpressionAttributeValues: { ':pk': homeKey(homeId), ':booking': 'BOOKING#' },
     });
-    return items.map((i) => i.booking as Booking);
+    // A cancelled booking's dates are free again.
+    return items.map((i) => i.booking as Booking).filter((b) => !b.cancelledAt);
   }
 }
 

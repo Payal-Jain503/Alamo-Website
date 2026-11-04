@@ -120,6 +120,15 @@ export async function handleHttp(service: BookingService, req: HttpRequest, orig
       return { ...json(r.status, r.body), headers: { 'content-type': 'application/json', 'cache-control': 'public, max-age=60' } };
     }
 
+    if (method === 'POST' && path === '/api/me/cancel') {
+      if (!accounts) return json(503, { error: 'accounts-not-set-up' });
+      const token = bearerToken(req.headers.authorization);
+      const email = token ? await accounts.verifier.verify(token) : undefined;
+      if (!email) return json(401, { error: 'sign-in-required' });
+      const r = await service.cancelBooking(email, (parseJson(body) as { bookingId?: unknown } | undefined)?.bookingId);
+      return json(r.status, r.body);
+    }
+
     if (method === 'POST' && path === '/api/me/review') {
       if (!accounts) return json(503, { error: 'accounts-not-set-up' });
       const token = bearerToken(req.headers.authorization);

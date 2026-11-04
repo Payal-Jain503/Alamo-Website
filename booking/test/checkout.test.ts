@@ -54,6 +54,9 @@ function setup(opts: { blocks?: Block[]; fresh?: boolean; plan?: RatePlan } = {}
     async cancel(id, key) {
       calls.push(`cancel ${id} ${key}`);
     },
+    async refund(id, amount, key) {
+      calls.push(`refund ${id} ${amount} ${key}`);
+    },
   };
   const holds = new InMemoryHoldRepository();
   const nights = new InMemoryNightStore();

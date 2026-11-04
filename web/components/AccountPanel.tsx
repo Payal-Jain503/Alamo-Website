@@ -6,6 +6,7 @@ import { confirmCode, getAccount, signOut, startSignIn, type Account } from '@/l
 import { usd } from '@/lib/bookingApi';
 import { homeBySlug } from '@/content/homes';
 import { ReviewForm } from './ReviewForm';
+import { CancelTrip } from './CancelTrip';
 import { mergeSaved } from '@/lib/saved';
 
 type View = { name: 'loading' } | { name: 'signed-out' } | { name: 'code'; email: string; session: string } | { name: 'in'; account: Account } | { name: 'unavailable' };
@@ -105,6 +106,9 @@ export function AccountPanel() {
   const { account } = view;
   const upcoming = account.trips.filter((t) => t.status === 'upcoming').reverse();
   const past = account.trips.filter((t) => t.status === 'past');
+  const cancelled = account.trips.filter((t) => t.status === 'cancelled');
+  const markCancelled = (id: string, refundCents: number) =>
+    setView({ name: 'in', account: { ...account, trips: account.trips.map((t) => (t.bookingId === id ? { ...t, status: 'cancelled' as const, refundCents } : t)) } });
   const list = (title: string, trips: typeof upcoming) =>
     trips.length > 0 && (
       <div className="trip-group">
@@ -118,6 +122,8 @@ export function AccountPanel() {
               </p>
               <p className="muted small">Confirmation {t.bookingId}</p>
               {t.status === 'past' && <ReviewForm trip={t} />}
+              {t.status === 'upcoming' && <CancelTrip trip={t} onDone={(r) => markCancelled(t.bookingId, r)} />}
+              {t.status === 'cancelled' && <p className="muted small">Cancelled. Refunded {usd(t.refundCents ?? 0)}.</p>}
             </div>
             <Link className="btn btn-ghost" href={`/homes/${t.homeId}/`}>
               View home
@@ -150,6 +156,7 @@ export function AccountPanel() {
         <>
           {list('Upcoming trips', upcoming)}
           {list('Past trips', past)}
+          {list('Cancelled', cancelled)}
         </>
       )}
     </div>

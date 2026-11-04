@@ -42,6 +42,9 @@ export interface Booking {
   guest: Guest;
   paymentId: string;
   confirmedAt: string;
+  /** Set when the guest cancelled. The dates were released and the refund sent. */
+  cancelledAt?: string;
+  refundCents?: number;
 }
 
 export type ReleaseReason = 'payment-failed' | 'calendar-conflict' | 'calendar-unavailable' | 'amount-mismatch' | 'expired' | 'capture-failed';
@@ -53,6 +56,8 @@ export interface PaymentGateway {
   capture(paymentId: string, idempotencyKey: string): Promise<void>;
   /** Drops the authorisation, so nothing is charged. Safe to call more than once. */
   cancel(paymentId: string, idempotencyKey: string): Promise<void>;
+  /** Sends part or all of a charged payment back to the guest's card. */
+  refund(paymentId: string, amount: number, idempotencyKey: string): Promise<void>;
 }
 
 /**
@@ -307,7 +312,7 @@ export class InMemoryHoldRepository implements HoldRepository {
     this.bookingsById.set(booking.id, structuredClone(booking));
   }
   async bookings(homeId: string) {
-    return [...this.bookingsById.values()].filter((b) => b.homeId === homeId).map((b) => structuredClone(b));
+    return [...this.bookingsById.values()].filter((b) => b.homeId === homeId && !b.cancelledAt).map((b) => structuredClone(b));
   }
   private readonly reviewsById = new Map<string, Review>();
   async saveReview(review: Review) {

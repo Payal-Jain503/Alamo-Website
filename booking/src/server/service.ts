@@ -8,6 +8,7 @@ import {
   sweepExpiredHolds,
   type CheckoutDeps,
   type Guest,
+  type Booking,
   type HoldRepository,
   type Review,
   type LiveCalendar,
@@ -85,7 +86,9 @@ export interface GuestTrip {
   totalCents: number;
   currency: 'usd';
   confirmedAt: string;
-  status: 'upcoming' | 'past';
+  status: 'upcoming' | 'past' | 'cancelled';
+  /** How much of the payment went back to the guest, for a cancelled trip. */
+  refundCents?: number;
   /** The guest's review of this stay, once written. */
   review?: { rating: number; comment: string };
 }
@@ -198,12 +201,40 @@ export class BookingService {
         currency: b.quote.currency,
         confirmedAt: b.confirmedAt,
         review: mine.has(b.id) ? { rating: mine.get(b.id)!.rating, comment: mine.get(b.id)!.comment } : undefined,
-        status: b.quote.checkOut >= (home ? this.today(home) : dateInTimeZone(this.now(), 'America/Chicago')) ? 'upcoming' : 'past',
+        refundCents: b.cancelledAt ? b.refundCents ?? 0 : undefined,
+        status: b.cancelledAt ? 'cancelled' : b.quote.checkOut >= (home ? this.today(home) : dateInTimeZone(this.now(), 'America/Chicago')) ? 'upcoming' : 'past',
       };
     });
     const last = bookings.slice().sort((a, b) => b.confirmedAt.localeCompare(a.confirmedAt))[0];
     const saved = (await this.deps.holds.wishlist(email)).filter((id) => this.home(id));
     return { status: 200, body: { email, name: last?.guest.name, phone: last?.guest.phone, trips, saved } };
+  }
+
+  /** The refund for cancelling today: all of it 5 or more days before check-in, half under 5 days, none once the stay has begun. */
+  refundFor(booking: Booking, home: HomeConfig): number {
+    const days = Math.round((Date.parse(`${booking.quote.checkIn}T00:00:00Z`) - Date.parse(`${this.today(home)}T00:00:00Z`)) / 86_400_000);
+    if (days < 1) return 0;
+    return days >= 5 ? booking.quote.total : Math.floor(booking.quote.total / 2);
+  }
+
+  /** A guest cancels one of their own upcoming bookings: the dates reopen and the refund is sent to their card. */
+  async cancelBooking(email: string, bookingId: unknown): Promise<ApiResult<{ refundCents: number } | { error: string }>> {
+    const booking = (await this.deps.holds.bookingsByEmail(email)).find((b) => b.id === bookingId);
+    if (!booking) return { status: 404, body: { error: 'unknown-booking' } };
+    const home = this.home(booking.homeId);
+    if (!home) return { status: 404, body: { error: 'unknown-home' } };
+    if (booking.cancelledAt) return { status: 409, body: { error: 'already-cancelled' } };
+    if (booking.quote.checkIn <= this.today(home)) return { status: 409, body: { error: 'stay-started' } };
+    const refundCents = this.refundFor(booking, home);
+    // The refund goes first: if it fails nothing has changed and the guest can try again. Its key makes a retry safe.
+    if (refundCents > 0) await this.deps.payments.refund(booking.paymentId, refundCents, `refund-${booking.id}`);
+    await this.deps.holds.saveBooking({ ...booking, cancelledAt: this.now().toISOString(), refundCents });
+    await this.deps.nights.release(booking.homeId, booking.quote.checkIn, booking.quote.checkOut, booking.holdId);
+    await this.deps.alerts.send(
+      `Booking cancelled: ${home.name}`,
+      `${booking.guest.name} (${booking.guest.email}) cancelled ${booking.id}, ${booking.quote.checkIn} to ${booking.quote.checkOut}. Refund sent: ${formatUsd(refundCents)} of ${formatUsd(booking.quote.total)}. The dates are open again on the website and in the export calendar.`,
+    );
+    return { status: 200, body: { refundCents } };
   }
 
   /** Public reviews of a home, newest first, with the average rating. Guest emails never leave the server. */
