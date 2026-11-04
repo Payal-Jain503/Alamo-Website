@@ -16,7 +16,7 @@ const RATES: Record<string, Rate> = {
   'texas-buckeye': [150, 190, 6, 25, 50],
   'longhorn-creek': [151, 150, 6, 25, 50],
   'sitio-plains': [175, 150, 8, 25, undefined],
-  'bender-azim': [200, 160, 8, 25, undefined],
+  'bender-azim': [200, 160, 8, 25, 50],
   'canyon-maple': [250, 190, 10, 15, 50],
   'villa-madama': [349, 190, 14, 15, 50],
   'clay-oak': [300, 280, undefined, undefined, 80],
@@ -33,13 +33,17 @@ const RATES: Record<string, Rate> = {
   'orchard': [199, 170, 8, 15, 50],
   'stormy-skies': [219, 170, 8, 15, 50],
   'lake-valley': [138, 150, 8, 15, 50],
-  'grey-woodpecker': [169, 170, 8, 25, 50],
+  'grey-woodpecker': [169, 170, 8, 25, undefined],
   'midvale': [499, 190, 10, 25, 50],
   'antigua': [210, 170, 8, 25, 50],
   'oat-st': [195, 180, 6, 20, 50],
   'rolling': [250, 225, 12, 15, 75],
   'saffron-plum': [195, 150, 6, 25, 50],
 };
+
+/** Homes that do not allow pets. Every other home does, at $50 a stay unless its rate row says otherwise. */
+const NO_PETS = new Set(['sitio-plains', 'grey-woodpecker']);
+const DEFAULT_PET_FEE = 50;
 
 /** Stand-in rates for homes that only sync calendars for now. Replace with the client's numbers per home. */
 function placeholderHome(id: string, name: string, rate?: Rate): HomeConfig {
@@ -57,7 +61,7 @@ function placeholderHome(id: string, name: string, rate?: Rate): HomeConfig {
       minNoticeDays: 1,
       bookingWindowDays: 365,
       cleaningFee: cleaning ? cleaning * 100 : 15_000,
-      ...(pet ? { petFee: pet * 100 } : {}),
+      ...(NO_PETS.has(id) ? {} : { petFee: (pet ?? DEFAULT_PET_FEE) * 100 }),
       // Max guests is not in the client's sheet yet, so nobody can book above the included number.
       maxGuests: included ?? 10,
       includedGuests: included ?? 8,
@@ -84,6 +88,7 @@ export const HOMES: HomeConfig[] = [
       minNoticeDays: 1,
       bookingWindowDays: 365,
       cleaningFee: 17_500,
+      petFee: 5_000,
       maxGuests: 12,
       includedGuests: 10,
       extraGuestNightly: 2_000,

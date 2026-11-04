@@ -270,3 +270,10 @@ test('a failing confirmation email never undoes the booking and the owner hears 
   assert.equal(s.mails.length, 0);
   assert.ok(s.alerts.some((a) => /Confirmation email not sent/.test(a.subject) && /sender not verified/.test(a.message)));
 });
+
+test('pets are allowed at every home except Sitio Plains and Grey Woodpecker', async () => {
+  const { HOMES } = await import('../src/server/homes.js');
+  const noPets = HOMES.filter((h) => h.plan.petFee === undefined).map((h) => h.id).sort();
+  assert.deepEqual(noPets, ['grey-woodpecker', 'sitio-plains']);
+  assert.equal(HOMES.find((h) => h.id === 'bender-azim')!.plan.petFee, 5_000);
+});

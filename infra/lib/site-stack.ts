@@ -159,6 +159,10 @@ export class SiteStack extends Stack {
       schedule: events.Schedule.rate(Duration.minutes(15)),
       targets: [new targets.LambdaFunction(jobs, { event: events.RuleTargetInput.fromObject({ job: 'sync' }), retryAttempts: 0 })],
     });
+    new events.Rule(this, 'RatesEveryHour', {
+      schedule: events.Schedule.rate(Duration.hours(1)),
+      targets: [new targets.LambdaFunction(jobs, { event: events.RuleTargetInput.fromObject({ job: 'rates' }), retryAttempts: 0 })],
+    });
     new events.Rule(this, 'SweepEvery5Minutes', {
       schedule: events.Schedule.rate(Duration.minutes(5)),
       targets: [new targets.LambdaFunction(jobs, { event: events.RuleTargetInput.fromObject({ job: 'sweep' }), retryAttempts: 0 })],

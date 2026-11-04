@@ -18,6 +18,7 @@ import {
 } from '../checkout.js';
 import { addDays, dateInTimeZone } from '../dates.js';
 import { buildExportCalendar } from '../exportFeed.js';
+import { matchListings, RATES_MAX_AGE_MS, toOverrides, type PriceLabsClient, type RateStore } from '../pricelabs.js';
 import { lockedNights, type NightStore } from '../holds.js';
 import { bookingConfirmationEmail, type GuestMailer } from '../guestEmail.js';
 import { formatUsd, quoteStay, type QuoteProblem, type RatePlan, type StayRequest } from '../pricing.js';
@@ -69,6 +70,8 @@ export interface ServiceDeps {
   /** Shown to guests in their confirmation email. */
   contact?: { phone?: string; email?: string };
   secrets: Secrets;
+  /** Dynamic prices from PriceLabs. Left out until the API key is saved; plans then use their own rates. */
+  rates?: { client: PriceLabsClient; store: RateStore };
   now?(): Date;
   fetchImpl?: typeof fetch;
 }
@@ -118,6 +121,39 @@ export class BookingService {
 
   constructor(private readonly deps: ServiceDeps) {
     this.now = deps.now ?? (() => new Date());
+  }
+
+  /** The home's rate plan with PriceLabs prices laid over it, when fresh ones are saved. */
+  async planFor(home: HomeConfig): Promise<RatePlan> {
+    const stored = await this.deps.rates?.store.load(home.id);
+    if (!stored || this.now().getTime() - Date.parse(stored.updatedAt) > RATES_MAX_AGE_MS) return home.plan;
+    return { ...home.plan, nightlyOverrides: { ...home.plan.nightlyOverrides, ...stored.overrides } };
+  }
+
+  /** The scheduled rate sync: reads PriceLabs prices for every home it can match by name. */
+  async syncRates() {
+    const rates = this.deps.rates;
+    if (!rates) return { skipped: 'PriceLabs is not set up' };
+    const { matched, unmatched } = matchListings(this.deps.homes, await rates.client.listings());
+    const failed: string[] = [];
+    let saved = 0;
+    for (const [homeId, listing] of matched) {
+      const home = this.home(homeId)!;
+      const today = this.today(home);
+      try {
+        const prices = await rates.client.prices(listing, today, addDays(today, home.plan.bookingWindowDays + home.plan.maxNights));
+        if (prices.error || (prices.currency && prices.currency.toUpperCase() !== 'USD')) throw new Error(prices.error ?? `currency ${prices.currency}`);
+        const overrides = toOverrides(prices);
+        if (!Object.keys(overrides).length) throw new Error('no prices');
+        await rates.store.save(homeId, { overrides, updatedAt: this.now().toISOString() });
+        saved++;
+      } catch (err) {
+        console.error('Rate sync failed', homeId, err);
+        failed.push(home.name);
+      }
+    }
+    if (failed.length) await this.deps.alerts.send('PriceLabs rates not updating', `Could not read PriceLabs prices for: ${failed.join(', ')}. Those homes keep their last prices for up to 2 days, then fall back to the standard rates.`);
+    return { saved, failed, unmatched };
   }
 
   home(id: string): HomeConfig | undefined {
@@ -246,7 +282,7 @@ export class BookingService {
     const home = this.home(input.homeId);
     if (!home) return { status: 404, body: { error: 'unknown-home' } };
     const stay: StayRequest = { checkIn: String(input.checkIn), checkOut: String(input.checkOut), guests: Number(input.guests), pets: input.pets ? Number(input.pets) : 0 };
-    const result = quoteStay(home.plan, stay, await this.knownBlocks(home), this.today(home));
+    const result = quoteStay(await this.planFor(home), stay, await this.knownBlocks(home), this.today(home));
     if (!result.ok) return { status: 422, body: { error: result.problem, message: result.message } };
     return { status: 200, body: { signed: signQuote(home.id, result.quote, this.deps.secrets.quoteSecret, this.now()) } };
   }
@@ -318,7 +354,10 @@ export class BookingService {
       calendar: this.liveCalendar,
       holds: this.deps.holds,
       notify: this.notifier,
-      ratePlan: async (homeId) => this.home(homeId)?.plan,
+      ratePlan: async (homeId) => {
+        const home = this.home(homeId);
+        return home && this.planFor(home);
+      },
       quoteSecret: this.deps.secrets.quoteSecret,
       today: () => dateInTimeZone(this.now(), 'America/Chicago'),
       now: this.now,
