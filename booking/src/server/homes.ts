@@ -76,29 +76,6 @@ function placeholderHome(id: string, name: string, rate?: Rate): HomeConfig {
 
 export const HOMES: HomeConfig[] = [
   {
-    id: 'san-antonio-5-bedroom',
-    name: 'San Antonio 5 Bedroom',
-    timeZone: 'America/Chicago',
-    sources: ['airbnb', 'vrbo'],
-    plan: {
-      baseNightly: 25_000,
-      weekendNightly: 32_000,
-      minStay: 2,
-      maxNights: 30,
-      minNoticeDays: 1,
-      bookingWindowDays: 365,
-      cleaningFee: 17_500,
-      petFee: 5_000,
-      maxGuests: 12,
-      includedGuests: 10,
-      extraGuestNightly: 2_000,
-      taxes: [
-        { name: 'Texas hotel occupancy tax (6%)', rateBps: 600, appliesTo: ['nights', 'cleaning', 'extraGuests'] },
-        { name: 'City and county hotel tax (example 9%)', rateBps: 900, appliesTo: ['nights', 'cleaning', 'extraGuests'] },
-      ],
-    },
-  },
-  {
     id: 'san-antonio-3-bedroom',
     name: 'Invitation Oak',
     timeZone: 'America/Chicago',
