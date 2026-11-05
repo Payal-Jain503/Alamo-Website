@@ -18,7 +18,7 @@ export function buildExportCalendar(property: Property, blocks: Block[], now = n
   for (const block of blocks) {
     if (!EXPORTED.has(block.source)) continue;
     calendar.createEvent({
-      id: `${block.uid}@alamocityrental.com`,
+      id: `${block.uid}@homeoverhotels.com`,
       start: block.start,
       end: block.end,
       allDay: true,

@@ -7,7 +7,7 @@ export const site = {
   email: 'Bnbbyzo@gmail.com',
   /** Add the Instagram profile link here once confirmed; the link is hidden while empty. */
   instagram: '',
-  url: 'https://alamocityrental.com',
+  url: 'https://www.homeoverhotels.com',
 };
 
 export type CitySlug = 'san-antonio' | 'austin' | 'houston';
