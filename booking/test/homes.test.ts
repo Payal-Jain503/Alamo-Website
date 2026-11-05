@@ -45,3 +45,9 @@ test('21630 Longwood has its cleaning, guest and pet fees', () => {
   assert.equal(p.extraGuestNightly, 1_500);
   assert.equal(p.petFee, 5_000);
 });
+
+test('Austin Burton includes 4 guests, then charges $50 per extra guest', () => {
+  const p = home('austin-burton').plan;
+  assert.equal(p.includedGuests, 4);
+  assert.equal(p.extraGuestNightly, 5_000);
+});
