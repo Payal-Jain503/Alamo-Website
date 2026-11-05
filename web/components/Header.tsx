@@ -72,11 +72,8 @@ export function Header({ homes, cities, phone, phoneHref, email, instagram }: He
         <nav className="wrap nav" ref={navRef} aria-label="Main">
           <Link href="/" className="brand" onClick={close}>
             <span className="brand-mark" aria-hidden="true">
-              <svg viewBox="0 0 40 40">
-                <path d="M8 34V20a12 12 0 0 1 24 0v14" />
-                <path d="M14 34V21a6 6 0 0 1 12 0v13" />
-                <path d="M4 34h32" />
-              </svg>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/skyline.png" alt="" width={81} height={34} />
             </span>
             <span className="brand-name">
               Alamo City <em>Rental</em>
