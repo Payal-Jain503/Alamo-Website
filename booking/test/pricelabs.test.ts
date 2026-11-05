@@ -92,7 +92,7 @@ test('synced PriceLabs prices are used in quotes, and stale ones are not', async
 test('a failed read keeps old prices and emails the owner', async () => {
   const { svc, sent } = service(fakeClient(350, { error: 'LISTING_TOGGLE_OFF' }));
   const r = (await svc.syncRates()) as { failed: string[] };
-  assert.deepEqual(r.failed, ['Crimson Star']);
+  assert.deepEqual(r.failed, ['Crimson Star (LISTING_TOGGLE_OFF)']);
   assert.deepEqual(sent, ['PriceLabs rates not updating']);
 });
 

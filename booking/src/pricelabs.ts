@@ -75,12 +75,12 @@ export class PriceLabsClient {
     const body = (await this.call('/v1/listing_prices', {
       method: 'POST',
       body: JSON.stringify({ listings: [{ id: listing.id, pms: listing.pms, dateFrom, dateTo }] }),
-    })) as Array<{ currency?: string; error?: string; data?: Array<Record<string, unknown>> }>;
+    })) as Array<{ currency?: string; error?: string; error_status?: string; data?: Array<Record<string, unknown>> }>;
     const first = body[0];
     if (!first) return { currency: '', days: [], error: 'empty answer' };
     return {
       currency: first.currency ?? '',
-      error: first.error,
+      error: first.error ? `${first.error}${first.error_status ? ` (${first.error_status})` : ''}` : first.error_status,
       days: (first.data ?? []).map((d) => ({
         date: String(d.date),
         price: typeof d.price === 'number' ? d.price : undefined,
@@ -110,7 +110,7 @@ export function matchListings(homes: Array<{ id: string; name: string }>, listin
     const airbnb = hits.filter((l) => l.pms.toLowerCase().includes('airbnb'));
     const pick = hits.length === 1 ? hits[0] : airbnb.length === 1 ? airbnb[0] : undefined;
     if (pick) matched.set(home.id, pick);
-    else unmatched.push(`${home.name}${hits.length > 1 ? ` (${hits.length} listings match)` : ''}`);
+    else unmatched.push(`${home.name}${hits.length > 1 ? ` (${hits.length} listings match: ${hits.map((l) => `${l.name} [${l.pms}]`).join('; ')})` : ''}`);
   }
   return { matched, unmatched };
 }
