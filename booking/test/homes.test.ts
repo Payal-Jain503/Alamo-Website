@@ -65,3 +65,9 @@ test('clay oak charges $25 per extra guest and allows 16', () => {
   assert.equal(h.plan.extraGuestNightly, 2_500);
   assert.equal(h.plan.maxGuests, 16);
 });
+
+test('austin burton cleaning fee is $120 and pet fee $50', () => {
+  const h = HOMES.find((x) => x.id === 'austin-burton')!;
+  assert.equal(h.plan.cleaningFee, 12_000);
+  assert.equal(h.plan.petFee, 5_000);
+});
