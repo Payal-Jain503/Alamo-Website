@@ -100,3 +100,12 @@ test('without a key nothing is read and plan rates apply', async () => {
   const { svc } = service(undefined);
   assert.deepEqual(await svc.syncRates(), { skipped: 'PriceLabs is not set up' });
 });
+
+test('mid-term homes need 30 nights at the monthly price and ignore PriceLabs', async () => {
+  const { HOMES } = await import('../src/server/homes.js');
+  const almadin = HOMES.find((h) => h.id === 'almadin')!;
+  assert.equal(almadin.plan.minStay, 30);
+  assert.ok(Math.abs(almadin.plan.baseNightly * 30 - 550_000) <= 15);
+  assert.equal(almadin.dynamicRates, false);
+  assert.equal(HOMES.some((h) => h.id === 'marconi-houston'), false);
+});

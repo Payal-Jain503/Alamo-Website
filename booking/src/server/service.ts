@@ -35,6 +35,8 @@ export interface HomeConfig {
   plan: RatePlan;
   /** The calendars that must be read before taking a booking, for example ['airbnb', 'vrbo']. */
   sources: Source[];
+  /** False for homes with a set price (such as mid-term homes), which never use PriceLabs rates. */
+  dynamicRates?: boolean;
 }
 
 export interface Secrets {
@@ -125,6 +127,7 @@ export class BookingService {
 
   /** The home's rate plan with PriceLabs prices laid over it, when fresh ones are saved. */
   async planFor(home: HomeConfig): Promise<RatePlan> {
+    if (home.dynamicRates === false) return home.plan;
     const stored = await this.deps.rates?.store.load(home.id);
     if (!stored || this.now().getTime() - Date.parse(stored.updatedAt) > RATES_MAX_AGE_MS) return home.plan;
     return { ...home.plan, nightlyOverrides: { ...home.plan.nightlyOverrides, ...stored.overrides } };
@@ -134,7 +137,7 @@ export class BookingService {
   async syncRates() {
     const rates = this.deps.rates;
     if (!rates) return { skipped: 'PriceLabs is not set up' };
-    const { matched, unmatched } = matchListings(this.deps.homes, await rates.client.listings());
+    const { matched, unmatched } = matchListings(this.deps.homes.filter((h) => h.dynamicRates !== false), await rates.client.listings());
     const failed: string[] = [];
     let saved = 0;
     for (const [homeId, listing] of matched) {
