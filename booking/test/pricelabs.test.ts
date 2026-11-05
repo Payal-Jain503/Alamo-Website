@@ -100,3 +100,13 @@ test('without a key nothing is read and plan rates apply', async () => {
   const { svc } = service(undefined);
   assert.deepEqual(await svc.syncRates(), { skipped: 'PriceLabs is not set up' });
 });
+
+test('a pinned home uses only its own listing even when other listings share its name', () => {
+  const stormy = [
+    { id: 'S1', pms: 'airbnb', name: 'Stormy skies 2--Stormy skies 2 · Centrally located 4bed', propertyName: '' },
+    { id: 'S2', pms: 'vrbo', name: '5110 Stormy Skies (4570934)', propertyName: '' },
+    { id: 'S3', pms: 'airbnb', name: 'Stormy Skies · Modern 4bed', propertyName: '' },
+  ];
+  const { matched } = matchListings([{ id: 'stormy-skies', name: 'Stormy Skies' }], stormy);
+  assert.equal(matched.get('stormy-skies')!.id, 'S1');
+});
