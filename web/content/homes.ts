@@ -146,6 +146,7 @@ export const homes: Home[] = [
     slug: 'westmark-azim',
     name: 'Westmark Azim',
     city: 'san-antonio',
+    bedrooms: 4,
     headline: 'A San Antonio home with four king beds, five TVs and an eight-seat dining table',
     description: [
       'A roomy two-story home with 6 beds, including four king beds, and 2.5 bathrooms, good for families and groups.',
@@ -264,6 +265,7 @@ export const homes: Home[] = [
     slug: 'amber-crest',
     name: 'Amber Crest',
     city: 'san-antonio',
+    bedrooms: 4,
     headline: 'A six-bed, single-story San Antonio home near UTSA',
     description: [
       'A single-story San Antonio home with 6 beds in a gated community near UTSA, with a pool table.',
@@ -333,6 +335,7 @@ export const homes: Home[] = [
     slug: 'donely',
     name: 'Donely',
     city: 'san-antonio',
+    bedrooms: 3,
     headline: 'A six-king-bed San Antonio home with a pool and a pool table',
     description: [
       'A centrally located San Antonio home with 6 king beds, a swimming pool and a pool table.',
