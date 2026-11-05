@@ -1,4 +1,4 @@
-# Alamo City Rental website
+# Home Over Hotels website
 
 Next.js static site. `npm run build` writes plain HTML, CSS and JS to `out/`,
 ready to upload to S3 behind CloudFront.

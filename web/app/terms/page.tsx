@@ -4,7 +4,7 @@ import { site } from '@/content/site';
 
 export const metadata: Metadata = {
   title: 'Terms and conditions',
-  description: 'Booking terms, damage waiver and indemnification for Alamo City Rental homes.',
+  description: 'Booking terms, damage waiver and indemnification for Home Over Hotels homes.',
 };
 
 // A plain-language starting point. The client's lawyer should review it before launch.
@@ -42,7 +42,7 @@ const sections = [
   {
     title: 'Indemnification',
     items: [
-      'The guest agrees to indemnify, defend and hold harmless Alamo City Rental, its property management team and the property owner from any claim, loss, injury, damage or expense arising from the guest, their party or their visitors, or their use of the property.',
+      'The guest agrees to indemnify, defend and hold harmless Home Over Hotels, its property management team and the property owner from any claim, loss, injury, damage or expense arising from the guest, their party or their visitors, or their use of the property.',
       'The guest stays at their own risk. We are not responsible for injury, illness or loss of personal belongings during the stay.',
     ],
   },

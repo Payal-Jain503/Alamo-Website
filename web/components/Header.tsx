@@ -73,10 +73,10 @@ export function Header({ homes, cities, phone, phoneHref, email, instagram }: He
           <Link href="/" className="brand" onClick={close}>
             <span className="brand-mark" aria-hidden="true">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/skyline.png" alt="" width={81} height={34} />
+              <img src="/house.png" alt="" width={80} height={36} />
             </span>
             <span className="brand-name">
-              Alamo City <em>Rental</em>
+              Home <em>Over</em> Hotels
             </span>
           </Link>
 

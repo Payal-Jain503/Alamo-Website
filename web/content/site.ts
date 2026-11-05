@@ -1,6 +1,6 @@
 // Business details shown across the site. Taken from alamocityrental.com.
 export const site = {
-  name: 'Alamo City Rental',
+  name: 'Home Over Hotels',
   tagline: 'Holiday homes across Texas',
   phone: '(210) 901-9440',
   phoneHref: 'tel:+12109019440',

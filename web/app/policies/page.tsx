@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Policies',
-  description: 'Booking, cancellation and house policies for Alamo City Rental homes.',
+  description: 'Booking, cancellation and house policies for Home Over Hotels homes.',
 };
 
 // The client confirms the final wording, refund windows and times. Until then

@@ -3,7 +3,7 @@ import { AccountPanel } from '@/components/AccountPanel';
 
 export const metadata: Metadata = {
   title: 'My trips',
-  description: 'Sign in to see your Alamo City Rental bookings.',
+  description: 'Sign in to see your Home Over Hotels bookings.',
 };
 
 export default function AccountPage() {

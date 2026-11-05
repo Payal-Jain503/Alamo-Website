@@ -9,7 +9,7 @@ import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: 'Our homes',
-  description: 'Browse Alamo City Rental holiday homes in San Antonio, Austin and Houston.',
+  description: 'Browse Home Over Hotels holiday homes in San Antonio, Austin and Houston.',
 };
 
 export default function HomesPage() {

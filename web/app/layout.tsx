@@ -8,10 +8,10 @@ import './globals.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
-  title: { default: 'Alamo City Rental | Holiday homes in San Antonio, Austin and Houston', template: '%s | Alamo City Rental' },
+  title: { default: 'Home Over Hotels | Holiday homes in San Antonio, Austin and Houston', template: '%s | Home Over Hotels' },
   description:
-    'Spacious holiday homes for families and groups in San Antonio, Austin and Houston. Book direct with Alamo City Rental.',
-  openGraph: { siteName: 'Alamo City Rental', type: 'website', locale: 'en_US' },
+    'Spacious holiday homes for families and groups in San Antonio, Austin and Houston. Book direct with Home Over Hotels.',
+  openGraph: { siteName: 'Home Over Hotels', type: 'website', locale: 'en_US' },
 };
 
 export const viewport: Viewport = { themeColor: '#0e1724', width: 'device-width', initialScale: 1 };
