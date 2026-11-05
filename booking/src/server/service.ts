@@ -149,7 +149,7 @@ export class BookingService {
         saved++;
       } catch (err) {
         console.error('Rate sync failed', homeId, err);
-        failed.push(home.name);
+        failed.push(`${home.name} (${err instanceof Error ? err.message : String(err)})`);
       }
     }
     if (failed.length) await this.deps.alerts.send('PriceLabs rates not updating', `Could not read PriceLabs prices for: ${failed.join(', ')}. Those homes keep their last prices for up to 2 days, then fall back to the standard rates.`);
