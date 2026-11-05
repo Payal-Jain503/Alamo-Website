@@ -15,7 +15,7 @@ test('exports direct bookings and owner blocks as all-day events', () => {
   assert.match(text, /DTSTART;VALUE=DATE:20261114/);
   assert.match(text, /DTEND;VALUE=DATE:20261117/);
   assert.match(text, /DTSTART;VALUE=DATE:20261120/);
-  assert.match(text, /UID:AC-1001@alamocityrental\.com/);
+  assert.match(text, /UID:AC-1001@homeoverhotels\.com/);
 });
 
 test('never exports imported Airbnb or VRBO dates, so calendars cannot echo', () => {
