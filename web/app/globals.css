@@ -465,3 +465,7 @@ textarea { border: 1px solid var(--line); padding: 10px 12px; resize: vertical; 
 .price-filter input[type='range']::-moz-range-track { height: 4px; border-radius: 2px; background: var(--line); }
 .price-filter input[type='range']::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; margin-top: -9px; border-radius: 50%; background: var(--brass); border: 0; }
 .price-filter input[type='range']::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: var(--brass); border: 0; }
+
+/* Soft corners on photos and panels */
+.home-card-photo, .city-card, .booking-panel, .contact-card, .gallery img, .gallery-main, .gallery-thumb { border-radius: 12px; }
+.city-card, .home-card-photo { overflow: hidden; }
