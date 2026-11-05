@@ -469,3 +469,8 @@ textarea { border: 1px solid var(--line); padding: 10px 12px; resize: vertical; 
 /* Soft corners on photos and panels */
 .home-card-photo, .city-card, .booking-panel, .contact-card, .gallery img, .gallery-main, .gallery-thumb { border-radius: 12px; }
 .city-card, .home-card-photo { overflow: hidden; }
+
+/* Homes page heading: lighter skyline behind the title, less empty space above the filters */
+.homes-head { position: relative; padding-bottom: 8px; overflow: hidden; }
+.homes-head::after { content: ''; position: absolute; right: max(var(--gutter, 24px), calc((100% - 1200px) / 2)); bottom: 0; width: min(420px, 40vw); aspect-ratio: 460 / 193; background: url('/skyline.png') no-repeat right bottom / contain; opacity: 0.16; pointer-events: none; }
+.homes-head > .wrap { position: relative; z-index: 1; }
