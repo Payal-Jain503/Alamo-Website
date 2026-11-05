@@ -8,7 +8,7 @@ export function Footer() {
       <div className="wrap footer-grid">
         <div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="footer-logo" src="/logo.png" alt="Alamo City Rental: short and mid term rentals and insurance placement, San Antonio, Houston, Austin" width={300} height={176} />
+          <img className="footer-logo" src="/logo.png" alt="Home Over Hotels: short and mid term rentals and insurance placement" width={300} height={200} />
           <p className="muted">Curated holiday homes in San Antonio, Austin and Houston.</p>
         </div>
         <div>
@@ -40,7 +40,7 @@ export function Footer() {
         </div>
       </div>
       <div className="wrap footer-base">
-        <span>© {year} Alamo City Rental</span>
+        <span>© {year} Home Over Hotels</span>
         <span>San Antonio, Texas</span>
       </div>
     </footer>

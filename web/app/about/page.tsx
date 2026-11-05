@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'About us',
-  description: 'Alamo City Rental is a San Antonio family business with holiday homes across Texas.',
+  description: 'Home Over Hotels is a San Antonio family business with holiday homes across Texas.',
 };
 
 export default function AboutPage() {
@@ -18,7 +18,7 @@ export default function AboutPage() {
       <section className="section tight">
         <div className="wrap narrow prose">
           <p className="lede-dark">
-            Alamo City Rental looks after holiday homes in San Antonio, Austin and Houston, chosen for families and groups who
+            Home Over Hotels looks after holiday homes in San Antonio, Austin and Houston, chosen for families and groups who
             want space, comfort and a local host.
           </p>
           <p>

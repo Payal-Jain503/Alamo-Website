@@ -4,7 +4,7 @@ import { site } from '@/content/site';
 
 export const metadata: Metadata = {
   title: 'Privacy policy',
-  description: 'How Alamo City Rental collects, uses and protects your information.',
+  description: 'How Home Over Hotels collects, uses and protects your information.',
 };
 
 // A plain-language starting point. The client should have it reviewed before launch.

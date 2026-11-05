@@ -11,7 +11,7 @@ export function bookingConfirmationEmail(b: Booking, homeName: string, contact: 
   const lines = [
     `Hi ${b.guest.name},`,
     '',
-    `Your stay is confirmed. Thank you for booking direct with Alamo City Rental.`,
+    `Your stay is confirmed. Thank you for booking direct with Home Over Hotels.`,
     '',
     `Confirmation: ${b.id}`,
     `Home: ${homeName}`,
@@ -27,7 +27,7 @@ export function bookingConfirmationEmail(b: Booking, homeName: string, contact: 
     'Check-in details and house rules will follow before your arrival.',
     contact.phone || contact.email ? `Questions? ${[contact.phone, contact.email].filter(Boolean).join(' or ')}.` : '',
     '',
-    'Alamo City Rental',
+    'Home Over Hotels',
   ];
   return { subject: `Your booking ${b.id} is confirmed`, text: lines.join('\n') };
 }

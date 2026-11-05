@@ -168,7 +168,7 @@ tr.row-conflict td { background: var(--bad-bg); }
 footer { margin-top: 40px; font-size: 13px; color: var(--muted); }
 </style>
 <main>
-  <div class="eyebrow">Calendar check · Alamo City Rental</div>
+  <div class="eyebrow">Calendar check · Home Over Hotels</div>
   <h1>${esc(input.propertyName)}</h1>
   <p class="sub">Airbnb and VRBO calendars merged into one, the way the booking engine sees them. Compare these dates with each site's own calendar.</p>
   ${input.sample ? '<span class="sample">Sample data in the Airbnb and VRBO format, not a real listing</span>' : ''}
@@ -195,7 +195,7 @@ footer { margin-top: 40px; font-size: 13px; color: var(--muted); }
   <div class="tablewrap"><table><thead><tr><th>Site</th><th>Status</th><th>Events</th><th>Source</th></tr></thead><tbody>${feedRows}</tbody></table></div>
   <h2>Every event</h2>
   <div class="tablewrap"><table><thead><tr><th>Site</th><th>Type</th><th>Check-in</th><th>Check-out</th><th>Nights</th><th>Title in feed</th></tr></thead><tbody>${blockRows || '<tr><td colspan="6">No events in this period</td></tr>'}</tbody></table></div>
-  <footer>Generated ${esc(input.generatedAt.toISOString().replace('T', ' ').slice(0, 16))} UTC by the Alamo City Rental booking engine.</footer>
+  <footer>Generated ${esc(input.generatedAt.toISOString().replace('T', ' ').slice(0, 16))} UTC by the Home Over Hotels booking engine.</footer>
 </main>
 `;
 }

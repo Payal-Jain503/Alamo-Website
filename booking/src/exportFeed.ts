@@ -10,8 +10,8 @@ const EXPORTED = new Set<Block['source']>(['direct', 'owner']);
  */
 export function buildExportCalendar(property: Property, blocks: Block[], now = new Date()): string {
   const calendar = ical({
-    name: `${property.name} – Alamo City Rental`,
-    prodId: { company: 'Alamo City Rental', product: 'Booking Calendar', language: 'EN' },
+    name: `${property.name} – Home Over Hotels`,
+    prodId: { company: 'Home Over Hotels', product: 'Booking Calendar', language: 'EN' },
     method: ICalCalendarMethod.PUBLISH,
   });
 

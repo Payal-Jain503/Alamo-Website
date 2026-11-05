@@ -1,4 +1,4 @@
-/* Alamo City Rental
+/* Home Over Hotels
    Look: boutique-hotel calm. Limestone paper, night-navy ink, brass accents,
    mission-arch motif. Solid colours only, no gradients. */
 :root {
@@ -86,8 +86,8 @@ p { margin: 0 0 14px; }
 .site-header.scrolled { border-bottom-color: var(--line); box-shadow: 0 6px 24px rgba(14, 23, 36, 0.06); }
 .nav { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 78px; }
 .brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; }
-.brand-mark img { display: block; height: 34px; width: auto; }
-.footer-logo { display: block; width: 100%; max-width: 300px; height: auto; margin-bottom: 14px; }
+.brand-mark img { display: block; height: 36px; width: auto; mix-blend-mode: multiply; }
+.footer-logo { display: block; width: 100%; max-width: 240px; height: auto; margin-bottom: 14px; background: #fff; padding: 10px; border-radius: 12px; }
 .brand-mark svg { width: 34px; height: 34px; fill: none; stroke: var(--brass); stroke-width: 1.6; }
 .brand-name { font-family: var(--display); font-size: 23px; letter-spacing: 0.04em; }
 .brand-name em { font-style: normal; color: var(--brass-deep); }

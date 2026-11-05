@@ -5,7 +5,7 @@ import { site } from '@/content/site';
 
 export const metadata: Metadata = {
   title: 'Contact and enquiries',
-  description: 'Send Alamo City Rental your dates, or call us to plan your stay.',
+  description: 'Send Home Over Hotels your dates, or call us to plan your stay.',
 };
 
 export default function ContactPage() {

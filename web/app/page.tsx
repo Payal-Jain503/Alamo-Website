@@ -11,7 +11,7 @@ const slides: Slide[] = [
     eyebrow: 'Stay',
     title: 'Spacious holiday homes across Texas',
     text: 'Three, four and five bedroom homes in San Antonio, Austin and Houston, ready for families and groups.',
-    media: <Photo src="photos/hero/stay.jpg" alt="Living room in an Alamo City Rental home" tone="navy" priority />,
+    media: <Photo src="photos/hero/stay.jpg" alt="Living room in an Home Over Hotels home" tone="navy" priority />,
   },
   {
     eyebrow: 'Gather',
@@ -23,7 +23,7 @@ const slides: Slide[] = [
     eyebrow: 'Explore',
     title: 'The Texas you came for',
     text: 'Minutes from the River Walk, Austin’s live music and Houston’s museums. We’ll point you to the best of it.',
-    media: <Photo src="photos/hero/explore.jpg" alt="Backyard pool at an Alamo City Rental home" tone="adobe" />,
+    media: <Photo src="photos/hero/explore.jpg" alt="Backyard pool at an Home Over Hotels home" tone="adobe" />,
   },
 ];
 
@@ -40,7 +40,7 @@ export default function HomePage() {
       <section className="section welcome">
         <div className="wrap welcome-grid">
           <div>
-            <p className="eyebrow">Welcome to Alamo City Rental</p>
+            <p className="eyebrow">Welcome to Home Over Hotels</p>
             <h2>Holiday homes made for getting together</h2>
           </div>
           <div className="prose">
