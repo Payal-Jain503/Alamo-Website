@@ -283,7 +283,8 @@ textarea { border: 1px solid var(--line); padding: 10px 12px; resize: vertical; 
 /* Search */
 .filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 18px 32px; padding-bottom: 24px; border-bottom: 1px solid var(--line); margin-bottom: 40px; }
 .filters label { width: 180px; }
-.price-filter { width: 320px; }
+.price-filter { width: 420px; max-width: 100%; }
+.price-filter span { white-space: nowrap; }
 .price-filter input { width: 100%; accent-color: var(--brass); border: 0; padding: 0; height: 28px; }
 .result-count { margin: 0 0 0 auto; font-family: var(--display); font-size: 20px; }
 @media (max-width: 620px) {
