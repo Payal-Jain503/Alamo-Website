@@ -115,9 +115,9 @@ export function HomeSearch({ items, cards, cities, featureOptions }: HomeSearchP
           <span>Guests</span>
           <input id="f-guests" type="number" min={1} max={30} inputMode="numeric" placeholder="Any" value={guests} onChange={(e) => setGuests(e.target.value)} />
         </label>
-        <label className="price-filter">
+        <label className="price-filter" title="Maximum price per night">
           <span>
-            Max price per night: <strong>{maxPrice >= PRICE_MAX ? 'Any' : `$${maxPrice}`}</strong>
+            Max price: <strong>{maxPrice >= PRICE_MAX ? 'Any' : `$${maxPrice}`}</strong>
           </span>
           <input id="f-price" type="range" min={PRICE_MIN} max={PRICE_MAX} step={10} value={maxPrice} onChange={(e) => setMaxPrice(Number(e.target.value))} />
         </label>
