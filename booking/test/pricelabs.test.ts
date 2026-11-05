@@ -108,6 +108,7 @@ test('mid-term homes need 30 nights at the monthly price and ignore PriceLabs', 
   assert.ok(Math.abs(almadin.plan.baseNightly * 30 - 550_000) <= 15);
   assert.equal(almadin.dynamicRates, false);
   assert.equal(HOMES.some((h) => h.id === 'marconi-houston'), false);
+});
 
 test('a pinned home uses only its own listing even when other listings share its name', () => {
   const stormy = [
