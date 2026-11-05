@@ -16,7 +16,7 @@ export default function HomesPage() {
   const cards = Object.fromEntries(homes.map((h) => [h.slug, <HomeCard key={h.slug} home={h} />]));
   return (
     <>
-      <section className="page-head">
+      <section className="page-head homes-head">
         <div className="wrap">
           <p className="eyebrow">Our homes</p>
           <h1>Find your home in Texas</h1>
