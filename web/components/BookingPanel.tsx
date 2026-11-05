@@ -287,7 +287,7 @@ function LiveBooking({ slug, blocked, reload }: { slug: string; blocked: Set<str
             <span>Phone (optional)</span>
             <input type="tel" autoComplete="tel" value={guest.phone} onChange={(e) => setGuest({ ...guest, phone: e.target.value })} />
           </label>
-          <label className="check">
+          <label className="check-row">
             <input type="checkbox" required />
             <span>
               I agree to the{' '}
