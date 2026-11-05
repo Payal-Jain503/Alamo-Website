@@ -21,7 +21,7 @@ const RATES: Record<string, Rate> = {
   'villa-madama': [349, 190, 14, 15, 50],
   'clay-oak': [300, 280, 16, 25, 80],
   'almadin': [259, 200, 14, 25, 50],
-  'austin-burton': [undefined, undefined, 4, 50, undefined],
+  'austin-burton': [undefined, 120, 4, 50, 50],
   '21630-longwood': [undefined, 160, 10, 15, 50],
   '21634-longwood': [201, 160, 10, 15, 50],
   'legend-point': [341, 220, 14, 25, 50],
