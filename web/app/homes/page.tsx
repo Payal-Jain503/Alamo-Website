@@ -4,6 +4,8 @@ import { HomeSearch } from '@/components/HomeSearch';
 import { homes } from '@/content/homes';
 import { bedCount, featureFilters, featuresOf } from '@/content/homeFacts';
 import { cities } from '@/content/site';
+import { nightlyPrice } from '@/content/nightly';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: 'Our homes',
@@ -23,12 +25,14 @@ export default function HomesPage() {
       </section>
       <section className="section tight">
         <div className="wrap">
+          <Suspense>
           <HomeSearch
-            items={homes.map((h) => ({ slug: h.slug, city: h.city, bedrooms: h.bedrooms, maxGuests: h.maxGuests, beds: bedCount(h), features: featuresOf(h) }))}
+            items={homes.map((h) => ({ slug: h.slug, city: h.city, bedrooms: h.bedrooms, maxGuests: h.maxGuests, price: nightlyPrice[h.slug], beds: bedCount(h), features: featuresOf(h) }))}
             featureOptions={featureFilters.map((f) => ({ key: f.key, label: f.label })).filter((f) => homes.some((h) => featuresOf(h).includes(f.key)))}
             cards={cards}
             cities={cities.map((c) => ({ slug: c.slug, name: c.name }))}
           />
+          </Suspense>
         </div>
       </section>
     </>

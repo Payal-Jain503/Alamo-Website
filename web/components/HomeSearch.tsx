@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 
 export interface SearchItem {
@@ -8,6 +9,7 @@ export interface SearchItem {
   city: string;
   bedrooms?: number;
   maxGuests?: number;
+  price?: number;
   beds?: number;
   features: string[];
 }
@@ -19,9 +21,14 @@ interface HomeSearchProps {
   featureOptions: { key: string; label: string }[];
 }
 
+const PRICE_MIN = 100;
+const PRICE_MAX = 500;
+
 /** Filters the pre-rendered home cards by city, bedrooms and guests. */
 export function HomeSearch({ items, cards, cities, featureOptions }: HomeSearchProps) {
+  const params = useSearchParams();
   const [city, setCity] = useState('');
+  const [maxPrice, setMaxPrice] = useState(PRICE_MAX);
   const [bedrooms, setBedrooms] = useState('');
   const [guests, setGuests] = useState('');
   const [beds, setBeds] = useState('');
@@ -29,14 +36,14 @@ export function HomeSearch({ items, cards, cities, featureOptions }: HomeSearchP
   const [dates, setDates] = useState<{ in: string; out: string }>({ in: '', out: '' });
 
   useEffect(() => {
-    const q = new URLSearchParams(window.location.search);
+    const q = new URLSearchParams(params.toString());
     setCity(q.get('city') ?? '');
     setBedrooms(['3', '4', '5'].includes(q.get('bedrooms') ?? '') ? q.get('bedrooms')! : '');
     setGuests(q.get('guests') ?? '');
     setBeds(['4', '6', '8'].includes(q.get('beds') ?? '') ? q.get('beds')! : '');
     setFeature(featureOptions.some((f) => f.key === q.get('amenity')) ? q.get('amenity')! : '');
     setDates({ in: q.get('in') ?? '', out: q.get('out') ?? '' });
-  }, [featureOptions]);
+  }, [featureOptions, params]);
 
   const results = useMemo(
     () =>
@@ -48,10 +55,12 @@ export function HomeSearch({ items, cards, cities, featureOptions }: HomeSearchP
         if (guests && h.maxGuests !== undefined && h.maxGuests < Number(guests)) return false;
         // Homes whose bed count is not confirmed stay in the results.
         if (beds && h.beds !== undefined && h.beds < Number(beds)) return false;
+        // Homes without a known price stay in the results.
+        if (maxPrice < PRICE_MAX && h.price !== undefined && h.price > maxPrice) return false;
         if (feature && !h.features.includes(feature)) return false;
         return true;
       }),
-    [items, city, bedrooms, guests, beds, feature],
+    [items, city, bedrooms, guests, beds, feature, maxPrice],
   );
 
   const enquiry = new URLSearchParams();
@@ -106,6 +115,12 @@ export function HomeSearch({ items, cards, cities, featureOptions }: HomeSearchP
           <span>Guests</span>
           <input id="f-guests" type="number" min={1} max={30} inputMode="numeric" placeholder="Any" value={guests} onChange={(e) => setGuests(e.target.value)} />
         </label>
+        <label className="price-filter">
+          <span>
+            Max price per night: <strong>{maxPrice >= PRICE_MAX ? 'Any' : `$${maxPrice}`}</strong>
+          </span>
+          <input id="f-price" type="range" min={PRICE_MIN} max={PRICE_MAX} step={10} value={maxPrice} onChange={(e) => setMaxPrice(Number(e.target.value))} />
+        </label>
         <p className="result-count" aria-live="polite">
           {results.length} {results.length === 1 ? 'home' : 'homes'}
         </p>
@@ -132,6 +147,7 @@ export function HomeSearch({ items, cards, cities, featureOptions }: HomeSearchP
               setGuests('');
               setBeds('');
               setFeature('');
+              setMaxPrice(PRICE_MAX);
             }}
           >
             Clear filters
