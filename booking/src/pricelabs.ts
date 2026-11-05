@@ -93,6 +93,9 @@ export class PriceLabsClient {
 /** Extra words that identify a home when its PriceLabs name is spelled differently from ours. */
 const ALIASES: Record<string, string[]> = { '21634-longwood': ['21634'], 'oat-st': ['4612oats'] };
 
+/** Homes whose name also fits other PriceLabs listings: only the listing name containing this text is used. */
+const PINNED: Record<string, string> = { 'stormy-skies': 'stormyskies2' };
+
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 
 /**
@@ -104,7 +107,7 @@ export function matchListings(homes: Array<{ id: string; name: string }>, listin
   const matched = new Map<string, PriceLabsListing>();
   const unmatched: string[] = [];
   for (const home of homes) {
-    const keys = [norm(home.name), norm(home.id), ...(ALIASES[home.id] ?? [])].filter((k) => k.length >= 4);
+    const keys = PINNED[home.id] ? [PINNED[home.id]!] : [norm(home.name), norm(home.id), ...(ALIASES[home.id] ?? [])].filter((k) => k.length >= 4);
     const hits = listings.filter((l) => [norm(l.name), norm(l.propertyName)].some((n) => n && keys.some((k) => n.includes(k) || k.includes(n))));
     // A home listed on both Airbnb and VRBO shows up twice; the Airbnb listing is the one we price from.
     const airbnb = hits.filter((l) => l.pms.toLowerCase().includes('airbnb'));
