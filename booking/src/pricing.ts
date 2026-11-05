@@ -51,6 +51,8 @@ export interface RatePlan {
   checkInDays?: number[];
   checkOutDays?: number[];
   taxes: TaxRate[];
+  /** Stays of this many nights or more pay no occupancy tax (Texas: 30 consecutive nights). */
+  taxFreeFromNights?: number;
 }
 
 export interface StayRequest {
@@ -202,7 +204,8 @@ export function quoteStay(plan: RatePlan, stay: StayRequest, blocks: Block[], to
     base.pets = plan.petFee * pets;
   }
 
-  const taxes = plan.taxes.map((t) => {
+  const taxFree = plan.taxFreeFromNights !== undefined && nights.length >= plan.taxFreeFromNights;
+  const taxes = (taxFree ? [] : plan.taxes).map((t) => {
     const taxable = t.appliesTo.reduce((sum, k) => sum + base[k], 0);
     return { label: t.name, amount: percentOf(taxable, t.rateBps) };
   });

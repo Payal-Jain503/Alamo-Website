@@ -25,3 +25,15 @@ test('a home with no pet fee turns pets away', () => {
 test('every home has a unique id', () => {
   assert.equal(new Set(HOMES.map((h) => h.id)).size, HOMES.length);
 });
+
+test('each home pays its own occupancy tax, and 30-night stays pay none', () => {
+  const rate = (id: string) => home(id).plan.taxes.reduce((s, t) => s + t.rateBps, 0);
+  assert.equal(rate('crimson'), 1700);
+  assert.equal(rate('oat-st'), 1700);
+  assert.equal(rate('rolling'), 600);
+  assert.equal(rate('grey-woodpecker'), 800);
+  assert.deepEqual(home('oat-st').plan.taxes.map((t) => t.rateBps), [600, 400, 700]);
+  const long = quoteStay(home('amber-crest').plan, { checkIn: '2026-12-01', checkOut: '2026-12-31', guests: 2 }, [], '2026-11-03');
+  assert.ok(long.ok);
+  assert.deepEqual(long.quote.taxes, []);
+});
