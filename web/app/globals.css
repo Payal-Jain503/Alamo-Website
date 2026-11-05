@@ -283,6 +283,8 @@ textarea { border: 1px solid var(--line); padding: 10px 12px; resize: vertical; 
 /* Search */
 .filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 18px 32px; padding-bottom: 24px; border-bottom: 1px solid var(--line); margin-bottom: 40px; }
 .filters label { width: 180px; }
+.price-filter { width: 320px; }
+.price-filter input { width: 100%; accent-color: var(--brass); }
 .result-count { margin: 0 0 0 auto; font-family: var(--display); font-size: 20px; }
 .dates-note { background: var(--white); border-left: 2px solid var(--brass); padding: 14px 18px; margin: -16px 0 36px; max-width: 80ch; }
 .empty { padding: 60px 0; text-align: center; }
