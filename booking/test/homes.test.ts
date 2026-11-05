@@ -37,3 +37,11 @@ test('each home pays its own occupancy tax, and 30-night stays pay none', () => 
   assert.ok(long.ok);
   assert.deepEqual(long.quote.taxes, []);
 });
+
+test('21630 Longwood has its cleaning, guest and pet fees', () => {
+  const p = home('21630-longwood').plan;
+  assert.equal(p.cleaningFee, 16_000);
+  assert.equal(p.includedGuests, 10);
+  assert.equal(p.extraGuestNightly, 1_500);
+  assert.equal(p.petFee, 5_000);
+});
