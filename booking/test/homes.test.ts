@@ -59,3 +59,9 @@ test('max guests follows the client list and never drops below included guests',
   assert.equal(HOMES.find((h) => h.id === 'longhorn-creek')!.plan.maxGuests, 7);
   assert.equal(HOMES.find((h) => h.id === 'amber-crest')!.plan.maxGuests, 11);
 });
+
+test('clay oak charges $25 per extra guest and allows 16', () => {
+  const h = HOMES.find((x) => x.id === 'clay-oak')!;
+  assert.equal(h.plan.extraGuestNightly, 2_500);
+  assert.equal(h.plan.maxGuests, 16);
+});
