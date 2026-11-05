@@ -73,7 +73,7 @@ function LiveBooking({ slug, blocked, reload }: { slug: string; blocked: Set<str
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState('2');
-  const [pet, setPet] = useState(false);
+  const [pet, setPet] = useState('0');
   const [signed, setSigned] = useState<SignedQuote | null>(null);
   const [quoting, setQuoting] = useState(false);
   const [error, setError] = useState('');
@@ -103,7 +103,7 @@ function LiveBooking({ slug, blocked, reload }: { slug: string; blocked: Set<str
     if (!checkIn || !checkOut || !Number.isInteger(n) || n < 1) return;
     setQuoting(true);
     try {
-      const { body } = await getQuote({ homeId: slug, checkIn, checkOut, guests: n, pets: pet ? 1 : 0 });
+      const { body } = await getQuote({ homeId: slug, checkIn, checkOut, guests: n, pets: Math.max(0, Math.floor(Number(pet) || 0)) });
       if (body.signed) setSigned(body.signed);
       else setError(body.error === 'unavailable' ? problemMessage('unavailable') : (body.message ?? problemMessage(body.error ?? '')));
     } catch {
@@ -237,9 +237,9 @@ function LiveBooking({ slug, blocked, reload }: { slug: string; blocked: Set<str
         <span>Guests</span>
         <input type="number" min={1} max={30} inputMode="numeric" value={guests} onChange={(e) => setGuests(e.target.value)} />
       </label>
-      <label className="check-row">
-        <input type="checkbox" checked={pet} onChange={(e) => setPet(e.target.checked)} />
-        <span>I&rsquo;m bringing a pet</span>
+      <label>
+        <span>Number of pets</span>
+        <input type="number" min={0} max={10} inputMode="numeric" value={pet} onChange={(e) => setPet(e.target.value)} />
       </label>
 
       {quoting ? <p className="muted small">Checking the price…</p> : null}

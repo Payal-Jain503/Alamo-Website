@@ -127,3 +127,9 @@ test('the minimum stay comes from the arrival night', () => {
 test('same-day bookings work when notice is set to 0', () => {
   assert.equal(quoteStay({ ...plan, minNoticeDays: 0 }, { checkIn: today, checkOut: '2026-10-31', guests: 2 }, [], today).ok, true);
 });
+
+test('the pet fee is charged for each pet', () => {
+  const r = quoteStay(plan, { checkIn: '2026-11-09', checkOut: '2026-11-12', guests: 2, pets: 2 }, [], today);
+  assert.ok(r.ok);
+  assert.deepEqual(r.quote.fees.find((f) => f.label.startsWith('Pet fee')), { label: 'Pet fee (2 pets)', amount: 15_000 });
+});

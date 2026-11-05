@@ -40,7 +40,7 @@ export interface RatePlan {
   /** How far ahead guests can book, in days. */
   bookingWindowDays: number;
   cleaningFee: Cents;
-  /** Per stay, charged once if any pets come. Undefined means no pets allowed. */
+  /** Per pet, per stay. Undefined means no pets allowed. */
   petFee?: Cents;
   maxGuests: number;
   /** Guests included in the nightly rate. */
@@ -198,8 +198,8 @@ export function quoteStay(plan: RatePlan, stay: StayRequest, blocks: Block[], to
     base.extraGuests = amount;
   }
   if (pets > 0 && plan.petFee) {
-    fees.push({ label: 'Pet fee', amount: plan.petFee });
-    base.pets = plan.petFee;
+    fees.push({ label: pets > 1 ? `Pet fee (${pets} pets)` : 'Pet fee', amount: plan.petFee * pets });
+    base.pets = plan.petFee * pets;
   }
 
   const taxes = plan.taxes.map((t) => {
