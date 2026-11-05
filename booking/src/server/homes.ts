@@ -4,8 +4,8 @@ import type { HomeConfig } from './service.js';
  * The homes that take direct bookings, with their rates and rules. Money is
  * in US cents. iCal links are not here: they are secrets in Parameter Store.
  *
- * These entries are examples for the homes being tested. Its rates,
- * fees and tax rates are placeholders until the client confirms them, and
+ * These entries are examples for the homes being tested. Its rates
+ * and fees are placeholders until the client confirms them, and
  * the id must match the home's page slug on the website.
  */
 /** Dollars: nightly rate, cleaning fee (management fee included), guests included, extra guest per night, pet fee per stay (none = no pets). */
@@ -48,6 +48,27 @@ const MID_TERM: Record<string, number> = { almadin: 5_500, 'austin-burton': 2_60
 const NO_PETS = new Set(['sitio-plains', 'grey-woodpecker']);
 const DEFAULT_PET_FEE = 50;
 
+/**
+ * Hotel occupancy tax per home, in percent: [state, county, city]. Each shows as its own line at checkout.
+ * Homes not listed pay the San Antonio rate. Stays of 30 nights or more pay none.
+ */
+const TAX_PERCENT: Record<string, [number, number, number]> = {
+  'oat-st': [6, 4, 7],
+  rolling: [6, 0, 0],
+  'grey-woodpecker': [6, 2, 0], // outside San Antonio city limits
+};
+const SAN_ANTONIO_TAX: [number, number, number] = [6, 2, 9];
+
+export function taxesFor(id: string): HomeConfig['plan']['taxes'] {
+  const [state, county, city] = TAX_PERCENT[id] ?? SAN_ANTONIO_TAX;
+  const appliesTo: Array<'nights' | 'cleaning' | 'extraGuests'> = ['nights', 'cleaning', 'extraGuests'];
+  return [
+    { name: `Texas state hotel tax (${state}%)`, rateBps: state * 100, appliesTo },
+    { name: `County hotel tax (${county}%)`, rateBps: county * 100, appliesTo },
+    { name: `City hotel tax (${city}%)`, rateBps: city * 100, appliesTo },
+  ].filter((t) => t.rateBps > 0);
+}
+
 /** Stand-in rates for homes that only sync calendars for now. Replace with the client's numbers per home. */
 function placeholderHome(id: string, name: string, rate?: Rate): HomeConfig {
   const [rateNightly, cleaning, included, extra, pet] = rate ?? [];
@@ -72,10 +93,8 @@ function placeholderHome(id: string, name: string, rate?: Rate): HomeConfig {
       maxGuests: included ?? 10,
       includedGuests: included ?? 8,
       extraGuestNightly: extra ? extra * 100 : 2_000,
-      taxes: [
-        { name: 'Texas hotel occupancy tax (6%)', rateBps: 600, appliesTo: ['nights', 'cleaning', 'extraGuests'] },
-        { name: 'City and county hotel tax (example 9%)', rateBps: 900, appliesTo: ['nights', 'cleaning', 'extraGuests'] },
-      ],
+      taxes: taxesFor(id),
+      taxFreeFromNights: 30,
     },
   };
 }
@@ -98,10 +117,8 @@ export const HOMES: HomeConfig[] = [
       maxGuests: 8,
       includedGuests: 8,
       extraGuestNightly: 2_500,
-      taxes: [
-        { name: 'Texas hotel occupancy tax (6%)', rateBps: 600, appliesTo: ['nights', 'cleaning', 'extraGuests'] },
-        { name: 'City and county hotel tax (example 9%)', rateBps: 900, appliesTo: ['nights', 'cleaning', 'extraGuests'] },
-      ],
+      taxes: taxesFor('san-antonio-3-bedroom'),
+      taxFreeFromNights: 30,
     },
   },
   // The rest of the portfolio. Calendars sync for these now; each one gets its real rates before its page goes live.
