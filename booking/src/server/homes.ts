@@ -72,6 +72,44 @@ export function taxesFor(id: string): HomeConfig['plan']['taxes'] {
 }
 
 /** Stand-in rates for homes that only sync calendars for now. Replace with the client's numbers per home. */
+/** Most guests allowed per home (client list). */
+const MAX_GUESTS: Record<string, number> = {
+  'antigua': 8,
+  'rolling': 14,
+  'sitio-plains': 9,
+  'southern-knoll': 16,
+  '21630-longwood': 12,
+  'lake-valley': 12,
+  'legend-point': 14,
+  'wentink': 16,
+  'san-antonio-3-bedroom': 8,
+  'colt-river': 9,
+  'oat-st': 10,
+  'gallery-wells': 12,
+  'pendant-pass-theater': 16,
+  'hideaway': 12,
+  'crimson': 16,
+  'grey-woodpecker': 8,
+  'coral': 16,
+  'midvale': 16,
+  'bender-azim': 10,
+  'donely': 14,
+  'orchard': 8,
+  'longhorn-creek': 7,
+  '21634-longwood': 12,
+  'westmark-azim': 12,
+  'austin-burton': 4,
+  'texas-buckeye': 6,
+  'villa-madama': 14,
+  'canyon-maple': 12,
+  'almadin': 14,
+  'saffron-plum': 7,
+  'stormy-skies': 10,
+  'amber-crest': 11,
+  'phlox-meadow': 12,
+  'clay-oak': 16,
+};
+
 function placeholderHome(id: string, name: string, rate?: Rate): HomeConfig {
   const [rateNightly, cleaning, included, extra, pet] = rate ?? [];
   const monthly = MID_TERM[id];
@@ -91,8 +129,7 @@ function placeholderHome(id: string, name: string, rate?: Rate): HomeConfig {
       bookingWindowDays: 365,
       cleaningFee: cleaning ? cleaning * 100 : 15_000,
       ...(NO_PETS.has(id) ? {} : { petFee: (pet ?? DEFAULT_PET_FEE) * 100 }),
-      // Max guests is not in the client's sheet yet, so nobody can book above the included number.
-      maxGuests: included ?? 10,
+      maxGuests: Math.max(MAX_GUESTS[id] ?? included ?? 10, included ?? 8),
       includedGuests: included ?? 8,
       extraGuestNightly: extra ? extra * 100 : 2_000,
       taxes: taxesFor(id),

@@ -37,6 +37,7 @@ export const homes: Home[] = [
     featured: true,
     name: 'Invitation Oak',
     city: 'san-antonio',
+    maxGuests: 8,
     bedrooms: 3,
     bathrooms: 2,
     headline: 'A one-story San Antonio home with king beds and a ping pong table',
@@ -55,6 +56,7 @@ export const homes: Home[] = [
     featured: true,
     name: 'Pendant Pass Theater',
     city: 'san-antonio',
+    maxGuests: 16,
     bedrooms: 4,
     headline: 'A four-bedroom San Antonio home with its own movie theater and pool table',
     description: [
@@ -71,6 +73,7 @@ export const homes: Home[] = [
     slug: 'bender-azim',
     name: 'Bender Azim',
     city: 'san-antonio',
+    maxGuests: 10,
     bedrooms: 4,
     headline: 'A four-bedroom home in the Medical Center area with a pool table and game room',
     description: [
@@ -86,6 +89,7 @@ export const homes: Home[] = [
     slug: 'villa-madama',
     name: 'Villa Madama',
     city: 'san-antonio',
+    maxGuests: 14,
     bedrooms: 5,
     headline: 'A gated five-bedroom San Antonio home with a pool table and a covered deck',
     description: [
@@ -101,6 +105,7 @@ export const homes: Home[] = [
     slug: 'wentink',
     name: 'Wentink',
     city: 'san-antonio',
+    maxGuests: 16,
     bedrooms: 5,
     headline: 'A big San Antonio home with a private theater, pool table and poker room',
     description: [
@@ -116,6 +121,7 @@ export const homes: Home[] = [
     slug: 'phlox-meadow',
     name: 'Phlox Meadow',
     city: 'san-antonio',
+    maxGuests: 12,
     bedrooms: 4,
     headline: 'A four-bedroom San Antonio home with a pool table, air hockey and a big backyard',
     description: [
@@ -131,6 +137,7 @@ export const homes: Home[] = [
     slug: 'oat-st',
     name: 'Oat St',
     city: 'houston',
+    maxGuests: 10,
     bedrooms: 3,
     headline: 'A modern three-bedroom Houston home near NRG and downtown, with a fenced yard',
     description: [
@@ -146,6 +153,7 @@ export const homes: Home[] = [
     slug: 'westmark-azim',
     name: 'Westmark Azim',
     city: 'san-antonio',
+    maxGuests: 12,
     bedrooms: 4,
     headline: 'A San Antonio home with four king beds, five TVs and an eight-seat dining table',
     description: [
@@ -161,6 +169,7 @@ export const homes: Home[] = [
     slug: 'sitio-plains',
     name: 'Sitio Plains',
     city: 'san-antonio',
+    maxGuests: 9,
     headline: 'A four-bed San Antonio home with a fenced backyard and a Tesla charger',
     description: [
       'A comfortable home with 4 beds and 2 bathrooms, good for families and small groups, with a fully fenced backyard.',
@@ -176,6 +185,7 @@ export const homes: Home[] = [
     featured: true,
     name: 'Crimson Star',
     city: 'san-antonio',
+    maxGuests: 16,
     bedrooms: 5,
     headline: 'A five-bedroom San Antonio home with a theater and a pool table',
     description: [
@@ -191,6 +201,7 @@ export const homes: Home[] = [
     slug: 'clay-oak',
     name: 'Clay Oak',
     city: 'san-antonio',
+    maxGuests: 16,
     bedrooms: 5,
     headline: 'A five-bedroom, four-bath San Antonio home for families and groups',
     description: [
@@ -206,6 +217,7 @@ export const homes: Home[] = [
     slug: 'lake-valley',
     name: 'Lake Valley',
     city: 'san-antonio',
+    maxGuests: 12,
     bedrooms: 3,
     headline: 'A three-bedroom, two-bath San Antonio home close to Lackland',
     description: [
@@ -221,6 +233,7 @@ export const homes: Home[] = [
     slug: 'hideaway',
     name: 'Hideaway',
     city: 'san-antonio',
+    maxGuests: 12,
     bedrooms: 4,
     headline: 'A four-bedroom San Antonio home with a 130-inch theater',
     description: [
@@ -236,6 +249,7 @@ export const homes: Home[] = [
     slug: 'colt-river',
     name: 'Colt River',
     city: 'san-antonio',
+    maxGuests: 9,
     bedrooms: 3,
     headline: 'A three-bedroom, two-and-a-half-bath San Antonio home',
     description: [
@@ -251,6 +265,7 @@ export const homes: Home[] = [
     slug: 'canyon-maple',
     name: 'Canyon Maple',
     city: 'san-antonio',
+    maxGuests: 12,
     bedrooms: 5,
     headline: 'A five-bedroom San Antonio home with a pool table, near JW Marriott',
     description: [
@@ -265,6 +280,7 @@ export const homes: Home[] = [
     slug: 'amber-crest',
     name: 'Amber Crest',
     city: 'san-antonio',
+    maxGuests: 11,
     bedrooms: 4,
     headline: 'A six-bed, single-story San Antonio home near UTSA',
     description: [
@@ -279,6 +295,7 @@ export const homes: Home[] = [
     slug: 'antigua',
     name: 'Antigua',
     city: 'san-antonio',
+    maxGuests: 8,
     bedrooms: 4,
     headline: 'A four-bedroom San Antonio home near JW Marriott',
     description: [
@@ -293,6 +310,7 @@ export const homes: Home[] = [
     slug: 'saffron-plum',
     name: 'Saffron Plum',
     city: 'san-antonio',
+    maxGuests: 7,
     bedrooms: 3,
     headline: 'A three-bedroom San Antonio home by JW Marriott and TPC',
     description: [
@@ -307,6 +325,7 @@ export const homes: Home[] = [
     slug: 'coral',
     name: 'Coral Grove',
     city: 'san-antonio',
+    maxGuests: 16,
     bedrooms: 7,
     headline: 'A seven-bed San Antonio home with a pool, ping pong and air hockey',
     description: [
@@ -321,6 +340,7 @@ export const homes: Home[] = [
     slug: 'stormy-skies',
     name: 'Stormy Skies',
     city: 'san-antonio',
+    maxGuests: 10,
     bedrooms: 4,
     headline: 'A centrally located four-bedroom San Antonio home',
     description: [
@@ -335,6 +355,7 @@ export const homes: Home[] = [
     slug: 'donely',
     name: 'Donely',
     city: 'san-antonio',
+    maxGuests: 14,
     bedrooms: 3,
     headline: 'A six-king-bed San Antonio home with a pool and a pool table',
     description: [
@@ -349,6 +370,7 @@ export const homes: Home[] = [
     slug: 'texas-buckeye',
     name: 'Texas Buckeye',
     city: 'san-antonio',
+    maxGuests: 6,
     bathrooms: 2,
     headline: 'A three-bed, two-bath San Antonio home by the JW Marriott',
     description: ['A San Antonio home with three beds and two bathrooms, near the JW Marriott and TPC San Antonio, close to Bulverde and Evans.'],
@@ -361,6 +383,7 @@ export const homes: Home[] = [
     slug: 'southern-knoll',
     name: 'Southern Knoll',
     city: 'san-antonio',
+    maxGuests: 16,
     bathrooms: 3.5,
     headline: 'A nine-bed San Antonio home with a pool and ping pong table',
     description: ['A large San Antonio home with nine beds and three and a half bathrooms, made for big family trips and group stays.', 'There is a swimming pool and a ping pong table for the whole group.'],
@@ -373,6 +396,7 @@ export const homes: Home[] = [
     slug: 'midvale',
     name: 'Midvale',
     city: 'san-antonio',
+    maxGuests: 16,
     headline: 'A central seven-bed home with a heated pool and hot tub',
     description: ['A central San Antonio home with seven beds, a heated swimming pool and a hot tub.'],
     highlights: ['7 beds', 'Heated swimming pool', 'Hot tub', 'Central location'],
@@ -384,6 +408,7 @@ export const homes: Home[] = [
     slug: 'orchard',
     name: 'Orchard Ridge',
     city: 'san-antonio',
+    maxGuests: 8,
     bedrooms: 4,
     bathrooms: 2,
     headline: 'A central one-story, four-bedroom San Antonio home',
@@ -397,6 +422,7 @@ export const homes: Home[] = [
     slug: 'austin-burton',
     name: 'Austin Burton',
     city: 'austin',
+    maxGuests: 4,
     headline: 'A comfortable Austin home minutes from downtown',
     description: ['An Austin home a few minutes from downtown, with a patio, free parking and a TV in the bedroom.'],
     highlights: ['Minutes to downtown', 'Patio', 'Free parking', 'TV in the bedroom'],
@@ -408,6 +434,7 @@ export const homes: Home[] = [
     slug: '21630-longwood',
     name: '21630 Longwood',
     city: 'san-antonio',
+    maxGuests: 12,
     bedrooms: 4,
     bathrooms: 2,
     headline: 'A spacious four-bedroom San Antonio home off North 1604',
@@ -421,6 +448,7 @@ export const homes: Home[] = [
     slug: '21634-longwood',
     name: '21634 Longwood',
     city: 'san-antonio',
+    maxGuests: 12,
     bedrooms: 3,
     bathrooms: 2.5,
     headline: 'A three-bedroom San Antonio home with a pool table and a fenced yard',
@@ -434,6 +462,7 @@ export const homes: Home[] = [
     slug: 'longhorn-creek',
     name: 'Longhorn Creek',
     city: 'san-antonio',
+    maxGuests: 7,
     bedrooms: 3,
     bathrooms: 2,
     headline: 'A comfortable three-bedroom San Antonio home with a fenced yard',
@@ -447,6 +476,7 @@ export const homes: Home[] = [
     slug: 'legend-point',
     name: 'Legend Point',
     city: 'san-antonio',
+    maxGuests: 14,
     headline: 'A six-bed Stone Oak home with a 120-inch theater',
     description: ['A San Antonio home in Stone Oak with six beds, a 120-inch home theater, a ping pong table and a pool table.'],
     highlights: ['6 beds', '120-inch theater', 'Ping pong table', 'Pool table', 'Stone Oak'],
@@ -458,6 +488,7 @@ export const homes: Home[] = [
     slug: 'gallery-wells',
     name: 'Gallery Wells',
     city: 'san-antonio',
+    maxGuests: 12,
     bathrooms: 3,
     headline: 'A six-bed San Antonio home with a pool table, near the JW Marriott',
     description: ['A San Antonio home with six beds, one bed downstairs and three bathrooms, with a pool table and close to the JW Marriott.'],
@@ -470,6 +501,7 @@ export const homes: Home[] = [
     slug: 'grey-woodpecker',
     name: 'Grey Woodpecker',
     city: 'san-antonio',
+    maxGuests: 8,
     bedrooms: 3,
     bathrooms: 2,
     headline: 'A comfortable single-story three-bedroom home with a garage',
@@ -483,6 +515,7 @@ export const homes: Home[] = [
     slug: 'almadin',
     name: 'Almadin',
     city: 'san-antonio',
+    maxGuests: 14,
     bathrooms: 3,
     headline: 'A five-bed Stone Oak home with a large patio and pool table',
     description: ['A San Antonio home in Stone Oak with five beds and three bathrooms, a large patio and a pool table.'],

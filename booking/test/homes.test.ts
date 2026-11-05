@@ -51,3 +51,11 @@ test('Austin Burton includes 4 guests, then charges $50 per extra guest', () => 
   assert.equal(p.includedGuests, 4);
   assert.equal(p.extraGuestNightly, 5_000);
 });
+
+test('max guests follows the client list and never drops below included guests', () => {
+  const all = HOMES;
+  for (const h of all) assert.ok(h.plan.maxGuests >= h.plan.includedGuests, h.id);
+  assert.equal(HOMES.find((h) => h.id === 'austin-burton')!.plan.maxGuests, 4);
+  assert.equal(HOMES.find((h) => h.id === 'longhorn-creek')!.plan.maxGuests, 7);
+  assert.equal(HOMES.find((h) => h.id === 'amber-crest')!.plan.maxGuests, 11);
+});
