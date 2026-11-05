@@ -374,6 +374,7 @@ textarea { border: 1px solid var(--line); padding: 10px 12px; resize: vertical; 
 /* City hero */
 .city-hero { position: relative; height: min(62vh, 560px); min-height: 380px; color: var(--white); overflow: hidden; background: var(--night); }
 .city-hero > .photo { position: absolute; inset: 0; }
+.city-hero > img.photo { object-position: center 38%; }
 .city-hero .placeholder span { display: none; }
 .city-hero-copy { position: relative; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 60px; }
 
