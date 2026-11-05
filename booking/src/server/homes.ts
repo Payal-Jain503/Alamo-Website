@@ -41,23 +41,29 @@ const RATES: Record<string, Rate> = {
   'saffron-plum': [195, 150, 6, 25, 50],
 };
 
+/** Mid-term homes: a 30-night minimum at a set price per 30 nights, in dollars. They do not use PriceLabs rates. */
+const MID_TERM: Record<string, number> = { almadin: 5_500, 'austin-burton': 2_600, 'amber-crest': 4_400, 'clay-oak': 5_400 };
+
 /** Homes that do not allow pets. Every other home does, at $50 a stay unless its rate row says otherwise. */
 const NO_PETS = new Set(['sitio-plains', 'grey-woodpecker']);
 const DEFAULT_PET_FEE = 50;
 
 /** Stand-in rates for homes that only sync calendars for now. Replace with the client's numbers per home. */
 function placeholderHome(id: string, name: string, rate?: Rate): HomeConfig {
-  const [nightly, cleaning, included, extra, pet] = rate ?? [];
+  const [rateNightly, cleaning, included, extra, pet] = rate ?? [];
+  const monthly = MID_TERM[id];
+  const nightly = monthly ? monthly / 30 : rateNightly;
   return {
     id,
     name,
     timeZone: 'America/Chicago',
     sources: ['airbnb', 'vrbo'],
+    ...(monthly ? { dynamicRates: false } : {}),
     plan: {
-      baseNightly: nightly ? nightly * 100 : 20_000,
-      weekendNightly: nightly ? nightly * 100 : 25_000,
-      minStay: 2,
-      maxNights: 30,
+      baseNightly: nightly ? Math.round(nightly * 100) : 20_000,
+      weekendNightly: nightly ? Math.round(nightly * 100) : 25_000,
+      minStay: monthly ? 30 : 2,
+      maxNights: monthly ? 180 : 30,
       minNoticeDays: 1,
       bookingWindowDays: 365,
       cleaningFee: cleaning ? cleaning * 100 : 15_000,
@@ -131,7 +137,6 @@ export const HOMES: HomeConfig[] = [
     ['antigua', 'Antigua'],
     ['austin-burton', 'Austin Burton'],
     ['oat-st', 'Oat St'],
-    ['marconi-houston', 'Marconi Houston'],
     ['rolling', 'Rolling'],
     ['saffron-plum', 'Saffron Plum'],
   ].map(([id, name]) => placeholderHome(id!, name!, RATES[id!])),
