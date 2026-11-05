@@ -7,9 +7,8 @@ export function Footer() {
     <footer className="site-footer">
       <div className="wrap footer-grid">
         <div>
-          <p className="footer-brand">
-            Alamo City <em>Rental</em>
-          </p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="footer-logo" src="/logo.png" alt="Alamo City Rental: short and mid term rentals and insurance placement, San Antonio, Houston, Austin" width={300} height={176} />
           <p className="muted">Curated holiday homes in San Antonio, Austin and Houston.</p>
         </div>
         <div>
