@@ -64,7 +64,7 @@ function confirmationHtml(b: Booking, homeName: string, contact: { phone?: strin
     ...b.quote.taxes.map((t) => row(t.label, formatUsd(t.amount))),
   ].join('');
   const link = (href: string, text: string) => `<a href="${href}" style="color:${BRASS};text-decoration:underline">${text}</a>`;
-  const contactLine = [contact.phone, contact.email].filter(Boolean).map((c) => escapeHtml(c!)).join(' or ');
+  const contactLine = [contact.phone, contact.email].filter(Boolean).map((c) => (c === contact.email ? link(`mailto:${c}`, escapeHtml(c!)) : escapeHtml(c!))).join(' or ');
   return `<!doctype html>
 <html><body style="margin:0;padding:0;background:#f4f2ec;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:1.5;color:${INK}">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f2ec"><tr><td align="center" style="padding:24px 12px">
@@ -97,7 +97,7 @@ ${row('Total charged', formatUsd(b.quote.total), true)}
 <p style="margin:0;color:${MUTED}">By booking you agreed to our ${link(`${SITE}/terms`, 'Terms')} and ${link(`${SITE}/policies`, 'Policies')} (cancellation and house rules). Our ${link(`${SITE}/privacy`, 'Privacy policy')} explains how we use your details.</p>
 </td></tr>
 <tr><td style="padding:20px 28px 28px">
-${contactLine ? `<p style="margin:0 0 12px">Questions? ${contactLine}.</p>` : ''}
+${contactLine ? `<p style="margin:0 0 12px;color:${MUTED}">Questions? ${contactLine}.</p>` : ''}
 <p style="margin:0;color:${MUTED}">Home Over Hotels</p>
 </td></tr>
 </table></td></tr></table>
