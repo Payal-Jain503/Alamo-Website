@@ -34,7 +34,7 @@ export default function HomePage() {
     <>
       <Slideshow slides={slides} />
       <div className="wrap bar-holder">
-        <AvailabilityBar cities={cities.map((c) => ({ slug: c.slug, name: c.name }))} />
+        <AvailabilityBar cities={cities.map((c) => ({ slug: c.slug, name: c.name }))} homes={homes.map((h) => ({ slug: h.slug, city: h.city }))} />
       </div>
 
       <section className="section welcome">
