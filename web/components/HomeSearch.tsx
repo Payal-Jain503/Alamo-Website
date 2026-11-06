@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { getAvailability } from '@/lib/bookingApi';
 
 export interface SearchItem {
   slug: string;
@@ -21,6 +22,17 @@ interface HomeSearchProps {
   featureOptions: { key: string; label: string }[];
 }
 
+const DAY = 86_400_000;
+const ISO = /^\d{4}-\d{2}-\d{2}$/;
+
+/** The nights of a stay, check-in included and check-out left out. Empty when the dates are not a valid stay. */
+function stayNights(checkIn: string, checkOut: string): string[] {
+  if (!ISO.test(checkIn) || !ISO.test(checkOut)) return [];
+  const nights: string[] = [];
+  for (let t = Date.parse(`${checkIn}T00:00:00Z`); t < Date.parse(`${checkOut}T00:00:00Z`) && nights.length < 400; t += DAY) nights.push(new Date(t).toISOString().slice(0, 10));
+  return nights;
+}
+
 const PRICE_MIN = 100;
 const PRICE_MAX = 500;
 
@@ -34,6 +46,9 @@ export function HomeSearch({ items, cards, cities, featureOptions }: HomeSearchP
   const [beds, setBeds] = useState('');
   const [feature, setFeature] = useState('');
   const [dates, setDates] = useState<{ in: string; out: string }>({ in: '', out: '' });
+  // Homes taken on the chosen dates. A home whose calendar can't be read stays in the results.
+  const [taken, setTaken] = useState<Set<string>>(new Set());
+  const [checking, setChecking] = useState(false);
 
   useEffect(() => {
     const q = new URLSearchParams(params.toString());
@@ -45,10 +60,39 @@ export function HomeSearch({ items, cards, cities, featureOptions }: HomeSearchP
     setDates({ in: q.get('in') ?? '', out: q.get('out') ?? '' });
   }, [featureOptions, params]);
 
+  useEffect(() => {
+    const nights = stayNights(dates.in, dates.out);
+    if (!nights.length) {
+      setTaken(new Set());
+      setChecking(false);
+      return;
+    }
+    let live = true;
+    setChecking(true);
+    Promise.all(
+      items.map(async (h) => {
+        try {
+          const blocked = await getAvailability(h.slug);
+          return nights.some((n) => blocked.has(n)) ? h.slug : null;
+        } catch {
+          return null;
+        }
+      }),
+    ).then((slugs) => {
+      if (!live) return;
+      setTaken(new Set(slugs.filter((x): x is string => x !== null)));
+      setChecking(false);
+    });
+    return () => {
+      live = false;
+    };
+  }, [dates, items]);
+
   const results = useMemo(
     () =>
       items.filter((h) => {
         if (city && h.city !== city) return false;
+        if (taken.has(h.slug)) return false;
         // 3 and 4 mean exactly that many; 5 means five or more.
         if (bedrooms && (bedrooms === '5' ? (h.bedrooms ?? 0) < 5 : h.bedrooms !== Number(bedrooms))) return false;
         // Homes without a confirmed guest limit stay in the results.
@@ -60,7 +104,7 @@ export function HomeSearch({ items, cards, cities, featureOptions }: HomeSearchP
         if (feature && !h.features.includes(feature)) return false;
         return true;
       }),
-    [items, city, bedrooms, guests, beds, feature, maxPrice],
+    [items, city, bedrooms, guests, beds, feature, maxPrice, taken],
   );
 
   const enquiry = new URLSearchParams();
@@ -126,10 +170,16 @@ export function HomeSearch({ items, cards, cities, featureOptions }: HomeSearchP
         </p>
       </div>
 
-      {dates.in && dates.out ? (
+      {stayNights(dates.in, dates.out).length ? (
         <p className="dates-note">
-          Live availability is coming soon. For {dates.in} to {dates.out}, pick a home and send an enquiry, or{' '}
-          <Link href={`/contact/?${enquiry}`}>ask us which homes are free</Link>.
+          {checking ? (
+            <>Checking which homes are free from {dates.in} to {dates.out}…</>
+          ) : (
+            <>
+              Showing homes that are free from {dates.in} to {dates.out}. Not sure about a home?{' '}
+              <Link href={`/contact/?${enquiry}`}>Ask us</Link>.
+            </>
+          )}
         </p>
       ) : null}
 
