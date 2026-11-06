@@ -136,7 +136,7 @@ async function build(): Promise<Runtime> {
     alerts,
     rates: params.get('pricelabs-api-key') ? { client: new PriceLabsClient(params.get('pricelabs-api-key')!.trim()), store: new DynamoRateStore(db, table) } : undefined,
     guestMail,
-    contact: { email: fromAddress },
+    contact: { phone: '(210) 901-9440', email: fromAddress },
     secrets: {
       stripeWebhookSecret: params.get('stripe/webhook-secret'),
       quoteSecret: need('quote-secret'),

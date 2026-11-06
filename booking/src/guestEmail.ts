@@ -96,9 +96,9 @@ ${row('Total charged', formatUsd(b.quote.total), true)}
 <p style="margin:0 0 4px;font-weight:700">Terms and policies</p>
 <p style="margin:0;color:${MUTED}">By booking you agreed to our ${link(`${SITE}/terms`, 'Terms')} and ${link(`${SITE}/policies`, 'Policies')} (cancellation and house rules). Our ${link(`${SITE}/privacy`, 'Privacy policy')} explains how we use your details.</p>
 </td></tr>
-<tr><td style="padding:20px 28px 28px">
-${contactLine ? `<p style="margin:0 0 12px;color:${MUTED}">Questions? ${contactLine}.</p>` : ''}
-<p style="margin:0;color:${MUTED}">Home Over Hotels</p>
+<tr><td align="center" style="padding:24px 28px 28px;border-top:1px solid ${LINE}">
+<img src="${SITE}/logo.png" width="140" alt="Home Over Hotels" style="display:block;margin:0 auto 12px;border:0;max-width:140px;height:auto">
+${contactLine ? `<p style="margin:0;color:${MUTED}">Questions? ${contactLine}</p>` : ''}
 </td></tr>
 </table></td></tr></table>
 </body></html>`;
