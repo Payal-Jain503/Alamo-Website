@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { StayCalendar } from '@/components/StayCalendar';
 import { addDays, shortDate, todayInTexas } from '@/lib/bookingApi';
 
-const NO_DATES = new Set<string>();
+const NO_DATES: ReadonlySet<string> = new Set<string>();
 const CALENDAR_DAYS = 365;
 
 /**
@@ -18,12 +18,18 @@ export function DateRangeFields({
   checkOut,
   onChange,
   cellClass = 'field',
+  blocked = NO_DATES,
+  onOpen,
 }: {
   idPrefix: string;
   checkIn: string;
   checkOut: string;
   onChange: (checkIn: string, checkOut: string) => void;
   cellClass?: string;
+  /** Nights that can't be picked, shown crossed out. */
+  blocked?: ReadonlySet<string>;
+  /** Called each time the calendar opens, for loading the blocked nights. */
+  onOpen?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [up, setUp] = useState(false);
@@ -35,6 +41,7 @@ export function DateRangeFields({
     const box = cell.current?.getBoundingClientRect();
     if (box) setUp(window.innerHeight - box.bottom < 400 && box.top > 400);
     setOpen(true);
+    onOpen?.();
   };
 
   useEffect(() => {
@@ -65,7 +72,7 @@ export function DateRangeFields({
         {open ? (
           <div className={`date-pop${up ? ' up' : ''}`} ref={pop} role="dialog" aria-label="Choose your dates">
             <StayCalendar
-              blocked={NO_DATES}
+              blocked={blocked as Set<string>}
               today={today}
               lastDay={addDays(today, CALENDAR_DAYS)}
               checkIn={checkIn}

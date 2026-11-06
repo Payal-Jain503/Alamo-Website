@@ -1,17 +1,33 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
+import { getAvailability } from '@/lib/bookingApi';
 import { DateRangeFields } from '@/components/DateRangeFields';
 import { GuestStepper } from '@/components/GuestStepper';
 
 /** The search bar that floats under the hero. Sends guests to the search page with their choices. */
-export function AvailabilityBar({ cities }: { cities: { slug: string; name: string }[] }) {
+export function AvailabilityBar({ cities, homes }: { cities: { slug: string; name: string }[]; homes: { slug: string; city: string }[] }) {
   const router = useRouter();
   const [city, setCity] = useState('');
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState('');
+  // Nights when every home in the chosen city (or every home) is taken. Those can't be picked.
+  const [full, setFull] = useState<Set<string>>(new Set());
+  const loaded = useRef(new Map<string, Set<string>>());
+
+  const loadFull = async () => {
+    const cached = loaded.current.get(city);
+    if (cached) return setFull(cached);
+    const pool = homes.filter((h) => !city || h.city === city);
+    const sets = await Promise.all(pool.map((h) => getAvailability(h.slug).catch(() => new Set<string>())));
+    // A home whose calendar can't be read counts as free, so nothing is crossed out by mistake.
+    const all = sets.length ? [...sets[0]].filter((d) => sets.every((s) => s.has(d))) : [];
+    const result = new Set(all);
+    loaded.current.set(city, result);
+    setFull(result);
+  };
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -38,6 +54,8 @@ export function AvailabilityBar({ cities }: { cities: { slug: string; name: stri
       </label>
       <DateRangeFields
         idPrefix="bar"
+        blocked={full}
+        onOpen={loadFull}
         checkIn={checkIn}
         checkOut={checkOut}
         onChange={(a, b) => {
