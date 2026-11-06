@@ -114,13 +114,13 @@ async function build(): Promise<Runtime> {
   const ses = new SESv2Client({});
   const guestMail: GuestMailer | undefined = fromAddress
     ? {
-        async send(to, subject, text) {
+        async send(to, subject, text, html) {
           await ses.send(
             new SendEmailCommand({
               FromEmailAddress: fromAddress,
               Destination: { ToAddresses: [to] },
               ReplyToAddresses: [fromAddress],
-              Content: { Simple: { Subject: { Data: subject }, Body: { Text: { Data: text } } } },
+              Content: { Simple: { Subject: { Data: subject }, Body: { Text: { Data: text }, ...(html ? { Html: { Data: html } } : {}) } } },
             }),
           );
         },
