@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
+import { GuestStepper } from '@/components/GuestStepper';
 
 /** The search bar that floats under the hero. Sends guests to the search page with their choices. */
 export function AvailabilityBar({ cities }: { cities: { slug: string; name: string }[] }) {
@@ -42,10 +43,10 @@ export function AvailabilityBar({ cities }: { cities: { slug: string; name: stri
         <span>Check-out</span>
         <input id="bar-out" type="date" value={checkOut} min={checkIn || undefined} onChange={(e) => setCheckOut(e.target.value)} />
       </label>
-      <label>
+      <div className="field">
         <span>Guests</span>
-        <input id="bar-guests" type="number" min={1} max={30} inputMode="numeric" placeholder="2" value={guests} onChange={(e) => setGuests(e.target.value)} />
-      </label>
+        <GuestStepper id="bar-guests" value={guests} onChange={setGuests} />
+      </div>
       <button type="submit" className="btn btn-solid">
         Check availability
       </button>

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { getAccount } from '@/lib/auth';
 import { StayCalendar } from '@/components/StayCalendar';
+import { GuestStepper } from '@/components/GuestStepper';
 import {
   STRIPE_PUBLISHABLE_KEY,
   addDays,
@@ -233,10 +234,10 @@ function LiveBooking({ slug, blocked, reload }: { slug: string; blocked: Set<str
           setStep({ name: 'dates' });
         }}
       />
-      <label>
+      <div className="field">
         <span>Guests</span>
-        <input type="number" min={1} max={30} inputMode="numeric" value={guests} onChange={(e) => setGuests(e.target.value)} />
-      </label>
+        <GuestStepper value={guests} onChange={setGuests} />
+      </div>
       <label>
         <span>Number of pets</span>
         <input type="number" min={0} max={10} inputMode="numeric" value={pet} onChange={(e) => setPet(e.target.value)} />
@@ -340,10 +341,10 @@ function EnquiryPanel({ slug }: { slug: string }) {
             <input id="bp-out" type="date" value={checkOut} min={checkIn || undefined} onChange={(e) => setCheckOut(e.target.value)} />
           </label>
         </div>
-        <label>
+        <div className="field">
           <span>Guests</span>
-          <input id="bp-guests" type="number" min={1} max={30} inputMode="numeric" placeholder="2" value={guests} onChange={(e) => setGuests(e.target.value)} />
-        </label>
+          <GuestStepper id="bp-guests" value={guests} onChange={setGuests} />
+        </div>
         {error ? (
           <p className="form-error" role="alert">
             {error}
