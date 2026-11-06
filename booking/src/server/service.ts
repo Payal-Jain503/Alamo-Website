@@ -308,7 +308,7 @@ export class BookingService {
     if (!this.deps.guestMail) return;
     try {
       const mail = bookingConfirmationEmail(b, homeName, this.deps.contact);
-      await this.deps.guestMail.send(b.guest.email, mail.subject, mail.text);
+      await this.deps.guestMail.send(b.guest.email, mail.subject, mail.text, mail.html);
     } catch (err) {
       await this.deps.alerts
         .send(`Confirmation email not sent for ${b.id}`, `The booking is confirmed, but the email to ${b.guest.email} failed: ${err instanceof Error ? err.message : String(err)}`)

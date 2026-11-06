@@ -36,7 +36,7 @@ function setup(opts: { mailFails?: boolean } = {}) {
     return new Response(f, { status: 200, headers: { 'content-type': 'text/calendar' } });
   }) as unknown as typeof fetch;
   const alerts: Array<{ subject: string; message: string }> = [];
-  const mails: Array<{ to: string; subject: string; text: string }> = [];
+  const mails: Array<{ to: string; subject: string; text: string; html?: string }> = [];
   const charged: string[] = [];
   const payments: PaymentGateway = {
     authorize: async (i) => ({ paymentId: `pi_${i.holdId}`, clientSecret: `cs_${i.holdId}` }),
@@ -53,9 +53,9 @@ function setup(opts: { mailFails?: boolean } = {}) {
     payments,
     alerts: { send: async (subject, message) => void alerts.push({ subject, message }) },
     guestMail: {
-      send: async (to, subject, text) => {
+      send: async (to, subject, text, html) => {
         if (opts.mailFails) throw new Error('sender not verified');
-        mails.push({ to, subject, text });
+        mails.push({ to, subject, text, html });
       },
     },
     secrets: { stripeWebhookSecret: whsec, quoteSecret: 'quote-secret-that-is-long-enough-12345', exportSecret: 'export-secret', feedUrls: { [home.id]: { airbnb: AIRBNB, vrbo: VRBO } } },
@@ -260,6 +260,9 @@ test('the guest gets a confirmation email with their stay and total', async () =
   assert.match(s.mails[0]!.subject, new RegExp(status.bookingId));
   assert.match(s.mails[0]!.text, /Check-in: 2026-11-09/);
   assert.match(s.mails[0]!.text, /Total charged: \$925\.00/);
+  assert.match(s.mails[0]!.html ?? '', /Your stay is confirmed/);
+  assert.match(s.mails[0]!.html ?? '', /\$925\.00/);
+  assert.match(s.mails[0]!.html ?? '', /Jordan Lee/);
 });
 
 test('a failing confirmation email never undoes the booking and the owner hears about it', async () => {
