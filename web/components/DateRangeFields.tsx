@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StayCalendar } from '@/components/StayCalendar';
 import { addDays, shortDate, todayInTexas } from '@/lib/bookingApi';
 
@@ -32,6 +32,20 @@ export function DateRangeFields({
   onOpen?: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [up, setUp] = useState(false);
+  const cell = useRef<HTMLDivElement>(null);
+  const pop = useRef<HTMLDivElement>(null);
+
+  // The calendar is about 380px tall. Open it above the field when there is no room below it.
+  const show = () => {
+    const box = cell.current?.getBoundingClientRect();
+    if (box) setUp(window.innerHeight - box.bottom < 400 && box.top > 400);
+    setOpen(true);
+  };
+
+  useEffect(() => {
+    if (open) pop.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -49,13 +63,13 @@ export function DateRangeFields({
   const today = todayInTexas();
   return (
     <>
-      <div className={cellClass} data-date-range>
+      <div className={cellClass} data-date-range ref={cell}>
         <span>Check-in</span>
-        <button type="button" id={`${idPrefix}-in`} className="date-btn" aria-expanded={open} onClick={() => setOpen(true)}>
+        <button type="button" id={`${idPrefix}-in`} className="date-btn" aria-expanded={open} onClick={show}>
           {checkIn ? shortDate(checkIn) : <em>Add date</em>}
         </button>
         {open ? (
-          <div className="date-pop" role="dialog" aria-label="Choose your dates">
+          <div className={`date-pop${up ? ' up' : ''}`} ref={pop} role="dialog" aria-label="Choose your dates">
             <StayCalendar
               blocked={blocked as Set<string>}
               today={today}
@@ -72,7 +86,7 @@ export function DateRangeFields({
       </div>
       <div className={cellClass} data-date-range>
         <span>Check-out</span>
-        <button type="button" id={`${idPrefix}-out`} className="date-btn" aria-expanded={open} onClick={() => setOpen(true)}>
+        <button type="button" id={`${idPrefix}-out`} className="date-btn" aria-expanded={open} onClick={show}>
           {checkOut ? shortDate(checkOut) : <em>Add date</em>}
         </button>
       </div>
