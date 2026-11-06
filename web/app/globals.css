@@ -507,3 +507,4 @@ textarea { border: 1px solid var(--line); padding: 10px 12px; resize: vertical; 
   .availability [data-date-range] { position: static; }
   .availability .date-pop { left: 0; right: 0; width: auto; }
 }
+.date-pop.up { top: auto; bottom: calc(100% + 6px); }
