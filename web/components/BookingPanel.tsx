@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { getAccount } from '@/lib/auth';
 import { StayCalendar } from '@/components/StayCalendar';
+import { DateRangeFields } from '@/components/DateRangeFields';
 import { GuestStepper } from '@/components/GuestStepper';
 import {
   STRIPE_PUBLISHABLE_KEY,
@@ -331,15 +332,17 @@ function EnquiryPanel({ slug }: { slug: string }) {
   return (
     <>
       <form onSubmit={onSubmit}>
-        <div className="field-row">
-          <label>
-            <span>Check-in</span>
-            <input id="bp-in" type="date" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
-          </label>
-          <label>
-            <span>Check-out</span>
-            <input id="bp-out" type="date" value={checkOut} min={checkIn || undefined} onChange={(e) => setCheckOut(e.target.value)} />
-          </label>
+        <div className="field-row date-row">
+          <DateRangeFields
+            idPrefix="bp"
+            checkIn={checkIn}
+            checkOut={checkOut}
+            onChange={(a, b) => {
+              setCheckIn(a);
+              setCheckOut(b);
+              setError('');
+            }}
+          />
         </div>
         <div className="field">
           <span>Guests</span>
