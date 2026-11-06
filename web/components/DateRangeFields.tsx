@@ -41,6 +41,7 @@ export function DateRangeFields({
     const box = cell.current?.getBoundingClientRect();
     if (box) setUp(window.innerHeight - box.bottom < 400 && box.top > 400);
     setOpen(true);
+    onOpen?.();
   };
 
   useEffect(() => {
