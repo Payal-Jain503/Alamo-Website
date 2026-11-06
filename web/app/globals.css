@@ -166,7 +166,7 @@ p { margin: 0 0 14px; }
 /* Floating availability bar */
 .bar-holder { position: relative; z-index: 5; margin-top: -54px; }
 .availability {
-  display: grid; grid-template-columns: 1.3fr 1fr 1fr 0.7fr auto; gap: 0; align-items: end;
+  position: relative; display: grid; grid-template-columns: 1.3fr 1fr 1fr 0.7fr auto; gap: 0; align-items: end;
   background: var(--white); box-shadow: 0 20px 50px rgba(14, 23, 36, 0.14); border: 1px solid var(--line);
 }
 .availability label, .availability .field { display: flex; flex-direction: column; gap: 4px; padding: 16px 20px; border-right: 1px solid var(--line); min-width: 0; }
@@ -494,3 +494,16 @@ textarea { border: 1px solid var(--line); padding: 10px 12px; resize: vertical; 
 .stepper button:disabled { opacity: .35; cursor: default; }
 .stepper input { width: 3ch; flex: 1; min-width: 0; text-align: center; border-bottom: 0; padding: 4px 0; -moz-appearance: textfield; }
 .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* Date fields that open one calendar */
+.date-btn { font: 400 16px/1.4 var(--body); color: var(--ink); background: transparent; border: 0; border-bottom: 1px solid var(--line); padding: 8px 0; width: 100%; text-align: left; cursor: pointer; border-radius: 0; }
+.date-btn em { font-style: normal; color: var(--muted); }
+.date-btn:focus-visible { outline: none; border-bottom-color: var(--brass); }
+.availability .date-btn { border-bottom: 0; padding: 4px 0; }
+[data-date-range] { position: relative; }
+.date-pop { position: absolute; z-index: 30; top: calc(100% + 6px); left: 0; width: min(340px, calc(100vw - 2 * var(--gutter))); background: var(--white); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 20px 50px rgba(14, 23, 36, 0.18); padding: 16px; }
+.date-row .date-pop { width: min(320px, calc(100vw - 2 * var(--gutter))); }
+@media (max-width: 860px) {
+  .availability [data-date-range] { position: static; }
+  .availability .date-pop { left: 0; right: 0; width: auto; }
+}
