@@ -527,13 +527,13 @@ export const homes: Home[] = [
   {
     slug: 'rolling',
     name: 'Rolling Hill',
-    city: 'san-antonio',
+    city: 'houston',
     maxGuests: 14,
     bedrooms: 5,
     bathrooms: 3,
     headline: 'A spacious five-bedroom home with a game room, ping pong and air hockey',
     description: [
-      'A spacious two-story San Antonio home with five bedrooms and three bathrooms, an open living area and kitchen with an island, and a big upstairs game room with a ping pong table and an air hockey table.',
+      'A spacious two-story home in Booth, Texas, in the Houston area, with five bedrooms and three bathrooms, an open living area and kitchen with an island, and a big upstairs game room with a ping pong table and an air hockey table.',
       'There is a desk set up for working, a washer and dryer, and a covered patio with seating looking over the backyard.',
     ],
     highlights: ['5 bedrooms, 3 bathrooms', 'Game room with ping pong and air hockey', 'Covered patio and backyard', 'Washer and dryer'],
