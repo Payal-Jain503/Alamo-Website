@@ -140,7 +140,11 @@ p { margin: 0 0 14px; }
   .nav-links .nav-cta a { justify-content: center; }
   .dropdown { position: static; min-width: 0; box-shadow: none; border: 0; padding: 0 0 14px; grid-template-columns: 1fr; display: none; opacity: 1; visibility: visible; transform: none; }
   .dropdown.show { display: grid; }
-  .topbar-inner { justify-content: center; }
+  .topbar-inner { flex-direction: column; align-items: stretch; gap: 8px; padding-block: 10px; }
+  .topbar-phone { display: flex; align-items: center; gap: 8px; }
+  .topbar-phone > a:first-child { margin-right: auto; font-size: 15px; }
+  .topbar a.topbar-btn { min-width: 74px; text-align: center; padding: 5px 14px; font-size: 13.5px; }
+  .topbar-inner > a { font-size: 13.5px; }
 }
 
 /* Hero slideshow */

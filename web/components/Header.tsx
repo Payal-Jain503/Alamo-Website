@@ -87,7 +87,7 @@ export function Header({ homes, cities, phone, phoneHref, email, instagram }: He
               <span className="brand-name">
                 Home <em>Over</em> Hotels
               </span>
-              <span className="brand-sub">Short-term · Mid-term · Long-term · Insurance placement</span>
+              <span className="brand-sub">Short-term · Mid-term · Insurance placement</span>
             </span>
           </Link>
 
