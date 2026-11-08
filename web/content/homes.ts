@@ -536,7 +536,7 @@ export const homes: Home[] = [
       'A spacious two-story home in Booth, Texas, in the Houston area, with five bedrooms and three bathrooms, an open living area and kitchen with an island, and a big upstairs game room with a ping pong table and an air hockey table.',
       'There is a desk set up for working, a washer and dryer, and a covered patio with seating looking over the backyard.',
     ],
-    highlights: ['5 bedrooms, 3 bathrooms', 'Game room with ping pong and air hockey', 'Covered patio and backyard', 'Washer and dryer'],
+    highlights: ['5 bedrooms, 3 bathrooms', '6 beds', 'Game room with ping pong and air hockey', 'Covered patio and backyard', 'Washer and dryer'],
     amenities: [...standardAmenities, 'Ping pong table', 'Air hockey table', 'Covered patio', 'Workspace'],
     tone: 'sage',
     photos: ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.jpg', '08.jpg', '09.jpg', '10.jpg', '11.jpg', '12.jpg', '13.jpg', '14.jpg', '15.jpg', '16.jpg'],
