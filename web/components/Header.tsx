@@ -59,7 +59,15 @@ export function Header({ homes, cities, phone, phoneHref, email, instagram }: He
     <>
       <div className="topbar">
         <div className="wrap topbar-inner">
-          <a href={phoneHref}>{phone}</a>
+          <span className="topbar-phone">
+            <a href={phoneHref}>{phone}</a>
+            <a href={phoneHref} className="topbar-btn">
+              Call
+            </a>
+            <a href={phoneHref.replace(/^tel:/, 'sms:')} className="topbar-btn">
+              Text
+            </a>
+          </span>
           <a href={`mailto:${email}`}>{email}</a>
           {instagram ? (
             <a href={instagram} target="_blank" rel="noopener noreferrer">
@@ -75,8 +83,11 @@ export function Header({ homes, cities, phone, phoneHref, email, instagram }: He
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/house.png" alt="" width={80} height={36} />
             </span>
-            <span className="brand-name">
-              Home <em>Over</em> Hotels
+            <span className="brand-text">
+              <span className="brand-name">
+                Home <em>Over</em> Hotels
+              </span>
+              <span className="brand-sub">Short-term · Mid-term · Long-term · Insurance placement</span>
             </span>
           </Link>
 
