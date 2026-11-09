@@ -59,30 +59,20 @@ export function Header({ homes, cities, phone, phoneHref, email, instagram }: He
     <>
       <div className="topbar">
         <div className="wrap topbar-inner">
-          <span className="topbar-actions">
-            <a href={phoneHref} className="topbar-btn">
+          <span className="topbar-phone">
+            <a href={phoneHref} className="topbar-call">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z" />
               </svg>
-              Call
+              {phone}
             </a>
-            <a href={phoneHref.replace(/^tel:/, 'sms:')} className="topbar-btn">
+            <a href={phoneHref.replace(/^tel:/, 'sms:')} className="topbar-icon" aria-label={`Text ${phone}`} title="Send a text">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H8l-4 4V5a1 1 0 0 1 1-1z" />
               </svg>
-              Text
-            </a>
-            <a href={`mailto:${email}`} className="topbar-btn topbar-btn-mail">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm1.6 2L12 12.6 19.4 7z" />
-              </svg>
-              Email
             </a>
           </span>
-          <span className="topbar-info">
-            <a href={phoneHref}>{phone}</a>
-            <a href={`mailto:${email}`}>{email}</a>
-          </span>
+          <a href={`mailto:${email}`}>{email}</a>
           {instagram ? (
             <a href={instagram} target="_blank" rel="noopener noreferrer">
               Instagram
