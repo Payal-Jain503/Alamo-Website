@@ -79,7 +79,8 @@ p { margin: 0 0 14px; }
 
 /* Top strip and header */
 .topbar { background: var(--night); color: #c9cfd8; font-size: 13.5px; }
-.topbar-inner { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px 28px; padding-block: 9px; }
+.topbar-inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px 28px; padding-block: 9px; }
+.topbar-below { display: none; }
 .topbar a { text-decoration: none; letter-spacing: 0.04em; }
 .topbar a:hover { color: var(--white); }
 .topbar-phone { display: inline-flex; align-items: center; gap: 10px; }
@@ -143,6 +144,8 @@ p { margin: 0 0 14px; }
   .nav-links .nav-cta a { justify-content: center; }
   .dropdown { position: static; min-width: 0; box-shadow: none; border: 0; padding: 0 0 14px; grid-template-columns: 1fr; display: none; opacity: 1; visibility: visible; transform: none; }
   .dropdown.show { display: grid; }
+  .topbar-top { display: none; }
+  .topbar-below { display: block; }
   .topbar-inner { flex-wrap: nowrap; justify-content: center; align-items: center; gap: 10px; padding-block: 10px; }
   .topbar-phone { gap: 8px; font-size: 13.5px; white-space: nowrap; }
   .topbar a { letter-spacing: 0.02em; white-space: nowrap; }
