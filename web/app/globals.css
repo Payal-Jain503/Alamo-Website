@@ -143,11 +143,13 @@ p { margin: 0 0 14px; }
   .nav-links .nav-cta a { justify-content: center; }
   .dropdown { position: static; min-width: 0; box-shadow: none; border: 0; padding: 0 0 14px; grid-template-columns: 1fr; display: none; opacity: 1; visibility: visible; transform: none; }
   .dropdown.show { display: grid; }
-  .topbar-inner { flex-direction: column; align-items: center; gap: 8px; padding-block: 12px; }
-  .topbar-phone { gap: 14px; font-size: 15px; }
-  .topbar a.topbar-call svg { width: 17px; height: 17px; }
-  .topbar a.topbar-icon { width: 36px; height: 36px; }
-  .topbar a.topbar-icon svg { width: 17px; height: 17px; }
+  .topbar-inner { flex-wrap: nowrap; justify-content: center; align-items: center; gap: 10px; padding-block: 10px; }
+  .topbar-phone { gap: 8px; font-size: 13.5px; white-space: nowrap; }
+  .topbar a { letter-spacing: 0.02em; white-space: nowrap; }
+  .topbar a.topbar-call { gap: 6px; }
+  .topbar a.topbar-call svg { width: 15px; height: 15px; }
+  .topbar a.topbar-icon { width: 32px; height: 32px; }
+  .topbar a.topbar-icon svg { width: 15px; height: 15px; }
 }
 
 /* Hero slideshow */
