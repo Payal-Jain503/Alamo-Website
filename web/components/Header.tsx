@@ -74,8 +74,12 @@ export function Header({ homes, cities, phone, phoneHref, email, instagram }: He
           </span>
           <a href={`mailto:${email}`}>{email}</a>
           {instagram ? (
-            <a href={instagram} target="_blank" rel="noopener noreferrer">
-              Instagram
+            <a href={instagram} target="_blank" rel="noopener noreferrer" className="topbar-icon" aria-label="Instagram" title="Instagram">
+              <svg viewBox="0 0 24 24" aria-hidden="true" className="ig-glyph">
+                <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
+                <circle cx="12" cy="12" r="4" />
+                <circle cx="17.2" cy="6.8" r="0.6" />
+              </svg>
             </a>
           ) : null}
         </div>
@@ -207,8 +211,12 @@ export function Header({ homes, cities, phone, phoneHref, email, instagram }: He
           </span>
           <a href={`mailto:${email}`}>{email}</a>
           {instagram ? (
-            <a href={instagram} target="_blank" rel="noopener noreferrer">
-              Instagram
+            <a href={instagram} target="_blank" rel="noopener noreferrer" className="topbar-icon" aria-label="Instagram" title="Instagram">
+              <svg viewBox="0 0 24 24" aria-hidden="true" className="ig-glyph">
+                <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
+                <circle cx="12" cy="12" r="4" />
+                <circle cx="17.2" cy="6.8" r="0.6" />
+              </svg>
             </a>
           ) : null}
         </div>

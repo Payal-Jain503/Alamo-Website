@@ -88,7 +88,12 @@ p { margin: 0 0 14px; }
 .topbar a.topbar-call svg { width: 15px; height: 15px; fill: currentColor; }
 .topbar a.topbar-icon { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1px solid #c9cfd8; border-radius: 50%; }
 .topbar a.topbar-icon svg { width: 14px; height: 14px; fill: currentColor; }
+.topbar a.topbar-icon svg.ig-glyph { fill: none; stroke: currentColor; stroke-width: 1.8; }
+.topbar a.topbar-icon svg.ig-glyph circle:last-child { fill: currentColor; stroke: none; }
 .topbar a.topbar-icon:hover { background: var(--white); color: var(--night); border-color: var(--white); }
+.footer-grid a.footer-icon { display: flex; padding: 0; align-items: center; justify-content: center; width: 34px; height: 34px; border: 1px solid currentColor; border-radius: 50%; margin-top: 6px; }
+.footer-grid a.footer-icon svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.footer-grid a.footer-icon svg circle:last-child { fill: currentColor; stroke: none; }
 .brand-text { display: flex; flex-direction: column; }
 .brand-sub { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--brass-deep); margin-top: 2px; white-space: nowrap; }
 .site-header { position: sticky; top: 0; z-index: 50; background: var(--paper); border-bottom: 1px solid transparent; transition: border-color .2s, box-shadow .2s; }
