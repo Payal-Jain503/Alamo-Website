@@ -5,8 +5,8 @@ export const site = {
   phone: '(210) 901-9440',
   phoneHref: 'tel:+12109019440',
   email: 'homeoverhotels@gmail.com',
-  /** Add the Instagram profile link here once confirmed; the link is hidden while empty. */
-  instagram: '',
+  /** Instagram profile, linked in the header, phone menu and footer (hidden if empty). */
+  instagram: 'https://www.instagram.com/alamocityrental',
   url: 'https://www.homeoverhotels.com',
 };
 
