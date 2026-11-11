@@ -86,14 +86,11 @@ p { margin: 0 0 14px; }
 .topbar-phone { display: inline-flex; align-items: center; gap: 10px; }
 .topbar a.topbar-call { display: inline-flex; align-items: center; gap: 8px; }
 .topbar a.topbar-call svg { width: 15px; height: 15px; fill: currentColor; }
-.topbar a.topbar-icon { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1px solid #c9cfd8; border-radius: 50%; }
+.topbar a.topbar-icon { flex: 0 0 auto; aspect-ratio: 1; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1px solid #c9cfd8; border-radius: 50%; }
 .topbar a.topbar-icon svg { width: 14px; height: 14px; fill: currentColor; }
 .topbar a.topbar-icon svg.ig-glyph { fill: none; stroke: currentColor; stroke-width: 1.8; }
 .topbar a.topbar-icon svg.ig-glyph circle:last-child { fill: currentColor; stroke: none; }
-.topbar a.topbar-icon:hover { background: var(--white); color: var(--night); border-color: var(--white); }
-.footer-grid a.footer-icon { display: flex; padding: 0; align-items: center; justify-content: center; width: 34px; height: 34px; border: 1px solid currentColor; border-radius: 50%; margin-top: 6px; }
-.footer-grid a.footer-icon svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; }
-.footer-grid a.footer-icon svg circle:last-child { fill: currentColor; stroke: none; }
+@media (hover: hover) { .topbar a.topbar-icon:hover { background: var(--white); color: var(--night); border-color: var(--white); } }
 .brand-text { display: flex; flex-direction: column; }
 .brand-sub { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--brass-deep); margin-top: 2px; white-space: nowrap; }
 .site-header { position: sticky; top: 0; z-index: 50; background: var(--paper); border-bottom: 1px solid transparent; transition: border-color .2s, box-shadow .2s; }
@@ -151,13 +148,21 @@ p { margin: 0 0 14px; }
   .dropdown.show { display: grid; }
   .topbar-top { display: none; }
   .topbar-below { display: block; }
-  .topbar-inner { flex-wrap: nowrap; justify-content: center; align-items: center; gap: 10px; padding-block: 10px; }
+  .topbar-inner { flex-wrap: nowrap; justify-content: center; align-items: center; gap: 8px; padding-block: 10px; }
   .topbar-phone { gap: 8px; font-size: 13.5px; white-space: nowrap; }
   .topbar a { letter-spacing: 0.02em; white-space: nowrap; }
   .topbar a.topbar-call { gap: 6px; }
   .topbar a.topbar-call svg { width: 15px; height: 15px; }
-  .topbar a.topbar-icon { width: 32px; height: 32px; }
-  .topbar a.topbar-icon svg { width: 15px; height: 15px; }
+  .topbar a.topbar-icon { width: 30px; height: 30px; }
+  .topbar a.topbar-icon svg { width: 14px; height: 14px; }
+}
+@media (max-width: 420px) {
+  .topbar-inner { gap: 6px; }
+  .topbar-phone, .topbar a { font-size: 12.5px; letter-spacing: 0; }
+  .topbar a.topbar-icon { width: 28px; height: 28px; }
+}
+@media (max-width: 350px) {
+  .topbar-inner { flex-wrap: wrap; row-gap: 6px; }
 }
 
 /* Hero slideshow */
