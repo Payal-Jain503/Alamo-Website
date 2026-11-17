@@ -8,27 +8,32 @@ import { HomeReviews } from '@/components/HomeReviews';
 import { SaveButton } from '@/components/SaveButton';
 import { PhotoGallery } from '@/components/PhotoGallery';
 import { homeBySlug, homes, homesInCity } from '@/content/homes';
+import { hiddenHomes, hiddenSlugs } from '@/content/hiddenHomes';
 import { cityBySlug, site } from '@/content/site';
 
 type Params = { slug: string };
 
+/** A listed home, or an unlisted one that is reachable only by its direct address. */
+const findHome = (slug: string) => homeBySlug(slug) ?? hiddenHomes.find((h) => h.slug === slug);
+
 export function generateStaticParams(): Params[] {
-  return homes.map((h) => ({ slug: h.slug }));
+  return [...homes, ...hiddenHomes].map((h) => ({ slug: h.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
-  const home = homeBySlug((await params).slug);
+  const slug = (await params).slug;
+  const home = findHome(slug);
   if (!home) return {};
-  return { title: home.name, description: home.headline };
+  return { title: home.name, description: home.headline, ...(hiddenSlugs.has(slug) ? { robots: { index: false, follow: false } } : {}) };
 }
 
 const GALLERY_SLOTS = 5;
 
 export default async function HomeDetailPage({ params }: { params: Promise<Params> }) {
-  const home = homeBySlug((await params).slug);
+  const home = findHome((await params).slug);
   if (!home) notFound();
   const city = cityBySlug(home.city)!;
-  const others = homesInCity(home.city).filter((h) => h.slug !== home.slug).slice(0, 3);
+  const others = hiddenSlugs.has(home.slug) ? [] : homesInCity(home.city).filter((h) => h.slug !== home.slug).slice(0, 3);
 
   const facts = [
     home.bedrooms && { label: 'Bedrooms', value: home.bedrooms },
