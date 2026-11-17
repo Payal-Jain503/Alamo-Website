@@ -71,3 +71,11 @@ test('austin burton cleaning fee is $120 and pet fee $50', () => {
   assert.equal(h.plan.cleaningFee, 12_000);
   assert.equal(h.plan.petFee, 5_000);
 });
+
+test('the $1 payment-test home charges exactly $1.00 a night, with no fees or tax', () => {
+  const r = quoteStay(home('test-one-dollar').plan, { checkIn: '2026-12-01', checkOut: '2026-12-02', guests: 2 }, [], '2026-11-17');
+  assert.ok(r.ok);
+  assert.equal(r.quote.total, 100);
+  assert.deepEqual(r.quote.fees, []);
+  assert.deepEqual(r.quote.taxes, []);
+});
