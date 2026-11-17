@@ -7,6 +7,7 @@ import { SiteStack } from '../lib/site-stack.js';
  * GitHub repository variables in the deploy workflow.
  *
  *   ownerEmail       where booking emails and alerts go (required to deploy)
+ *   alarmEmail       where technical alarms go; defaults to ownerEmail
  *   domainNames      comma separated, for example alamocityrental.com,www.alamocityrental.com
  *   certificateArn   ACM certificate in us-east-1 for those names (CloudFront needs it there)
  *   region           where the site's own resources live, defaults to ap-south-1
@@ -27,6 +28,7 @@ new SiteStack(app, 'AlamoWebsite', {
   env,
   description: 'Alamo City Rental website and booking engine',
   ownerEmail: ctx('ownerEmail') ?? 'owner@example.com',
+  alarmEmail: ctx('alarmEmail'),
   parameterPrefix: ctx('parameterPrefix') ?? '/alamo-web/',
   domainNames: ctx('domainNames')?.split(',').map((d) => d.trim()),
   certificateArn: ctx('certificateArn'),
