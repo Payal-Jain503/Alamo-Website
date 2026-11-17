@@ -29,6 +29,11 @@ const ORIGIN_HEADER = 'x-alamo-origin';
 export interface SiteStackProps extends StackProps {
   /** Where booking emails and calendar alerts go. */
   ownerEmail: string;
+  /**
+   * Where technical alarms (a function failing repeatedly) go. When left out they go to ownerEmail,
+   * as before. Set it to keep AWS error emails away from the owner.
+   */
+  alarmEmail?: string;
   /** Parameter Store prefix for the secrets, for example /alamo-web/. */
   parameterPrefix: string;
   /** For example ['alamocityrental.com', 'www.alamocityrental.com']. Leave out to use the CloudFront address. */
@@ -73,6 +78,10 @@ export class SiteStack extends Stack {
 
     const alerts = new sns.Topic(this, 'OwnerAlerts', { displayName: 'Alamo City Rental bookings' });
     alerts.addSubscription(new subs.EmailSubscription(props.ownerEmail));
+
+    // Technical alarms go to their own topic when an alarm address is set, so the owner only gets booking information.
+    const alarmTopic = props.alarmEmail ? new sns.Topic(this, 'TechAlarms', { displayName: 'Alamo website alarms' }) : alerts;
+    if (props.alarmEmail) alarmTopic.addSubscription(new subs.EmailSubscription(props.alarmEmail));
 
     // Guest accounts: sign in with an emailed 6-digit code, no passwords. Free for the first 10,000 monthly users.
     // Cognito's built-in sender is limited to 50 emails a day; switch it to SES once the domain's sender is verified.
@@ -168,7 +177,7 @@ export class SiteStack extends Stack {
       targets: [new targets.LambdaFunction(jobs, { event: events.RuleTargetInput.fromObject({ job: 'sweep' }), retryAttempts: 0 })],
     });
 
-    // Errors in either function email the owner. Calendar problems already send their own alerts.
+    // Errors in either function send an alarm email (to alarmEmail when set, otherwise the owner). Calendar problems already send their own alerts.
     for (const [name, fn] of [['Api', api], ['Jobs', jobs]] as const) {
       new cloudwatch.Alarm(this, `${name}Errors`, {
         metric: fn.metricErrors({ period: Duration.minutes(15) }),
@@ -176,7 +185,7 @@ export class SiteStack extends Stack {
         evaluationPeriods: 1,
         treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
         alarmDescription: `The ${name.toLowerCase()} function failed 3 or more times in 15 minutes. Check its logs in CloudWatch.`,
-      }).addAlarmAction(new cwActions.SnsAction(alerts));
+      }).addAlarmAction(new cwActions.SnsAction(alarmTopic));
     }
 
     // The function is reachable only through CloudFront, which adds this secret header.
