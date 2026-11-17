@@ -11,7 +11,8 @@ export class StripeGateway implements PaymentGateway {
     private readonly secretKey: string,
     private readonly fetchImpl: typeof fetch = fetch,
   ) {
-    if (!/^sk_(test|live)_/.test(secretKey)) throw new Error('Expected a Stripe secret key (sk_test_… or sk_live_…)');
+    // Secret keys (sk_) and restricted keys (rk_) both work as a Bearer token. Publishable keys (pk_) do not.
+    if (!/^(sk|rk)_(test|live)_/.test(secretKey)) throw new Error('Expected a Stripe secret or restricted key (sk_… or rk_…)');
   }
 
   private async call(path: string, params: Record<string, string>, idempotencyKey: string) {
