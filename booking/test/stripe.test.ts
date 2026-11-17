@@ -86,3 +86,12 @@ test('other Stripe errors are raised', async () => {
 test('only a Stripe secret key is accepted', () => {
   assert.throws(() => new StripeGateway('pk_test_123'));
 });
+
+test('restricted keys (rk_) work like secret keys', async () => {
+  const f = fakeFetch([{ status: 200, body: { id: 'pi_1' } }]);
+  const gw = new StripeGateway('rk_live_123', f.impl);
+  await gw.capture('pi_1', 'capture-h_1');
+  assert.equal((f.requests[0]!.init.headers as Record<string, string>).authorization, 'Bearer rk_live_123');
+  assert.throws(() => new StripeGateway('pk_live_123'));
+  assert.throws(() => new StripeGateway('rk_other_123'));
+});
