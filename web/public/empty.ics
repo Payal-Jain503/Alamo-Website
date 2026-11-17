@@ -1,0 +1,11 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Home Over Hotels//Empty test calendar//EN
+BEGIN:VEVENT
+UID:empty-test-calendar-1@homeoverhotels.com
+DTSTAMP:20200101T000000Z
+DTSTART;VALUE=DATE:20200101
+DTEND;VALUE=DATE:20200102
+SUMMARY:Past event (keeps this calendar from looking empty)
+END:VEVENT
+END:VCALENDAR

@@ -160,6 +160,28 @@ export const HOMES: HomeConfig[] = [
       taxFreeFromNights: 30,
     },
   },
+  {
+    // A $1-a-night home for testing live card payments. It is not listed anywhere on the website (see
+    // web/content/hiddenHomes.ts) and both its calendars are empty, so nothing else is affected. No fees or tax.
+    id: 'test-one-dollar',
+    name: 'Payment test ($1)',
+    timeZone: 'America/Chicago',
+    sources: ['airbnb', 'vrbo'],
+    dynamicRates: false,
+    plan: {
+      baseNightly: 100,
+      weekendNightly: 100,
+      minStay: 1,
+      maxNights: 3,
+      minNoticeDays: 0,
+      bookingWindowDays: 365,
+      cleaningFee: 0,
+      maxGuests: 2,
+      includedGuests: 2,
+      taxes: [],
+      taxFreeFromNights: 30,
+    },
+  },
   // The rest of the portfolio. Calendars sync for these now; each one gets its real rates before its page goes live.
   ...[
     ['hideaway', 'Hideaway'],

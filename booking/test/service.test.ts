@@ -276,7 +276,8 @@ test('a failing confirmation email never undoes the booking and the owner hears 
 
 test('pets are allowed at every home except Sitio Plains and Grey Woodpecker', async () => {
   const { HOMES } = await import('../src/server/homes.js');
-  const noPets = HOMES.filter((h) => h.plan.petFee === undefined).map((h) => h.id).sort();
+  // The $1 payment-test home is not a real listing, so it is ignored here.
+  const noPets = HOMES.filter((h) => h.id !== 'test-one-dollar' && h.plan.petFee === undefined).map((h) => h.id).sort();
   assert.deepEqual(noPets, ['grey-woodpecker', 'sitio-plains']);
   assert.equal(HOMES.find((h) => h.id === 'bender-azim')!.plan.petFee, 5_000);
 });
