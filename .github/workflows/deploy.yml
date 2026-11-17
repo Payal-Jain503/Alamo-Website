@@ -59,6 +59,7 @@ jobs:
           npm ci
           npx cdk deploy AlamoWebsite --require-approval never \
             -c ownerEmail="${{ vars.OWNER_EMAIL }}" \
+            -c alarmEmail="${{ vars.ALARM_EMAIL }}" \
             -c domainNames="${{ vars.DOMAIN_NAMES }}" \
             -c certificateArn="${{ vars.CERTIFICATE_ARN }}" \
             -c region="${{ vars.AWS_REGION }}"
