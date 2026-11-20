@@ -95,3 +95,17 @@ test('restricted keys (rk_) work like secret keys', async () => {
   assert.throws(() => new StripeGateway('pk_live_123'));
   assert.throws(() => new StripeGateway('rk_other_123'));
 });
+
+test('authorizedAmount reports an authorised card only while it waits to be charged', async () => {
+  const f = fakeFetch([
+    { status: 200, body: { id: 'pi_1', status: 'requires_capture', amount_capturable: 93_725 } },
+    { status: 200, body: { id: 'pi_1', status: 'requires_payment_method', amount_capturable: 0 } },
+    { status: 200, body: { id: 'pi_1', status: 'canceled', amount_capturable: 0 } },
+  ]);
+  const gw = new StripeGateway('sk_test_123', f.impl);
+  assert.equal(await gw.authorizedAmount('pi_1'), 93_725);
+  assert.equal(await gw.authorizedAmount('pi_1'), undefined);
+  assert.equal(await gw.authorizedAmount('pi_1'), undefined);
+  assert.equal(f.requests[0]!.url, 'https://api.stripe.com/v1/payment_intents/pi_1');
+  assert.equal(f.requests[0]!.init.method, undefined);
+});

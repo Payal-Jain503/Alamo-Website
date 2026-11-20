@@ -43,6 +43,7 @@ function setup(opts: { mailFails?: boolean } = {}) {
     capture: async (id) => void charged.push(id),
     cancel: async () => {},
     refund: async () => {},
+    authorizedAmount: async () => undefined,
   };
   const holds = new InMemoryHoldRepository();
   const service = new BookingService({
@@ -214,6 +215,7 @@ test('without Stripe keys the site still serves dates and quotes, paying fails c
       capture: async () => {},
       cancel: async () => {},
       refund: async () => {},
+      authorizedAmount: async () => undefined,
     },
     alerts: { send: async () => {} },
     secrets: { quoteSecret: 'quote-secret-that-is-long-enough-12345', exportSecret: 'export-secret', feedUrls: { [home.id]: { airbnb: AIRBNB, vrbo: VRBO } } },

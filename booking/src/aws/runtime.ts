@@ -64,6 +64,8 @@ const paymentsNotSetUp: PaymentGateway = {
   refund: async () => {
     throw new Error('Stripe is not set up yet');
   },
+  // Nothing can have been authorised without Stripe, so an expired hold is simply released.
+  authorizedAmount: async () => undefined,
 };
 
 const env = (name: string) => {
