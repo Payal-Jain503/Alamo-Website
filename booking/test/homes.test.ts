@@ -79,3 +79,23 @@ test('the $1 payment-test home charges exactly $1.00 a night, with no fees or ta
   assert.deepEqual(r.quote.fees, []);
   assert.deepEqual(r.quote.taxes, []);
 });
+
+test('mid-term homes charge exactly their monthly price for 30 nights, and a fair share for longer stays', () => {
+  const thirty = { checkIn: '2027-01-10', checkOut: '2027-02-09', guests: 2 };
+  for (const [id, monthly] of [['almadin', 550_000], ['amber-crest', 440_000], ['austin-burton', 260_000], ['clay-oak', 540_000]] as const) {
+    const q = quoteStay(home(id).plan, thirty, [], '2026-11-20');
+    assert.ok(q.ok, id);
+    assert.equal(q.quote.nightsTotal, monthly, id);
+    assert.equal(q.quote.nights.reduce((s, n) => s + n.nightly, 0), monthly, id);
+  }
+  const fortyFive = quoteStay(home('almadin').plan, { ...thirty, checkOut: '2027-02-24' }, [], '2026-11-20');
+  assert.ok(fortyFive.ok);
+  assert.equal(fortyFive.quote.nightsTotal, 825_000);
+});
+
+test('the pet fee is taxed like the rest of the stay', () => {
+  const q = quoteStay(home('hideaway').plan, { checkIn: '2027-01-12', checkOut: '2027-01-14', guests: 2, pets: 1 }, [], '2026-11-20');
+  assert.ok(q.ok);
+  // $562 nights + $180 cleaning + $50 pet = $792, taxed at 6% + 2% + 9%.
+  assert.deepEqual(q.quote.taxes.map((t) => t.amount), [4_752, 1_584, 7_128]);
+});

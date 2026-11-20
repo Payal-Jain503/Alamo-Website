@@ -33,6 +33,12 @@ export interface RatePlan {
   weekendNightly?: Cents;
   seasons?: SeasonalRate[];
   nightlyOverrides?: Record<string, { nightly: Cents; minStay?: number }>;
+  /**
+   * A set price for a block of nights, such as $5,500 per 30 nights for a mid-term home. When set, the nights
+   * total is exactly `amount × nights ÷ per`, rounded to the cent, instead of a rounded nightly rate times the
+   * nights (which would charge $5,499.90 for 30 nights at $5,500). Nightly overrides and seasons are ignored.
+   */
+  periodPrice?: { per: number; amount: Cents };
   minStay: number;
   maxNights: number;
   /** Days of notice needed before check-in. 0 allows same-day bookings. */
@@ -181,6 +187,12 @@ export function quoteStay(plan: RatePlan, stay: StayRequest, blocks: Block[], to
   if (conflicts.length) return fail('unavailable', 'Some of those nights are already booked.', conflicts);
 
   const nights = eachNight(stay.checkIn, stay.checkOut).map((date) => ({ date, ...priceNight(plan, date) }));
+  const period = plan.periodPrice;
+  if (period) {
+    // Each night gets its share of the set price; the shares add up to the exact total with no rounding drift.
+    const upTo = (n: number) => Math.round((period.amount * n) / period.per);
+    nights.forEach((n, i) => (n.nightly = upTo(i + 1) - upTo(i)));
+  }
   // The minimum stay is set by the arrival night, the way Airbnb and PriceLabs apply it.
   const minStay = nights[0]!.minStay;
   if (nightsCount < minStay) return fail('too-short', `The minimum stay for these dates is ${minStay} nights.`);

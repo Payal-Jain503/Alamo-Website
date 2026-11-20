@@ -108,6 +108,7 @@ test('mid-term homes need 30 nights at the monthly price and ignore PriceLabs', 
   const almadin = HOMES.find((h) => h.id === 'almadin')!;
   assert.equal(almadin.plan.minStay, 30);
   assert.ok(Math.abs(almadin.plan.baseNightly * 30 - 550_000) <= 15);
+  assert.deepEqual(almadin.plan.periodPrice, { per: 30, amount: 550_000 });
   assert.equal(almadin.dynamicRates, false);
   assert.equal(HOMES.some((h) => h.id === 'marconi-houston'), false);
 });
@@ -120,4 +121,15 @@ test('a pinned home uses only its own listing even when other listings share its
   ];
   const { matched } = matchListings([{ id: 'stormy-skies', name: 'Stormy Skies' }], stormy);
   assert.equal(matched.get('stormy-skies')!.id, 'S1');
+});
+
+test('homes with no PriceLabs match are reported once a day, on the 8 AM Texas run', async () => {
+  const noMatch = { listings: async () => [listings[1]!], prices: async () => ({ currency: 'USD', days: [] }) } as unknown as PriceLabsClient;
+  const early = service(noMatch);
+  const r = (await early.svc.syncRates()) as { unmatched: string[] };
+  assert.deepEqual(r.unmatched, ['Crimson Star']);
+  assert.deepEqual(early.sent, []);
+  const eight = service(noMatch, new InMemoryRateStore(), '2026-11-04T14:49:00Z');
+  await eight.svc.syncRates();
+  assert.deepEqual(eight.sent, ['Homes not priced from PriceLabs']);
 });

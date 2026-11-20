@@ -128,7 +128,7 @@ export default async function HomeDetailPage({ params }: { params: Promise<Param
               <Link href="/policies/">policies page</Link>.
             </p>
           </div>
-          <BookingPanel slug={home.slug} homeName={home.name} phone={site.phone} />
+          <BookingPanel slug={home.slug} homeName={home.name} phone={site.phone} maxGuests={home.maxGuests} />
         </div>
       </section>
 

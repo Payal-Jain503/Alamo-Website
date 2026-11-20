@@ -26,3 +26,12 @@ test('the HTML confirmation escapes the guest name and lists the charges', () =>
   assert.match(mail.html, /\$608\.22/);
   assert.match(mail.html, /help@example\.com/);
 });
+
+test('the confirmation lists pets only when the guest brings some', () => {
+  const quote = { checkIn: '2027-02-03', checkOut: '2027-02-05', nights: ['2027-02-03', '2027-02-04'], guests: 2, nightsTotal: 40800, fees: [], taxes: [], total: 40800 };
+  const withPet = bookingConfirmationEmail({ id: 'AC-2', guest: { name: 'Sam', email: 's@example.com' }, quote: { ...quote, pets: 1 } } as unknown as Booking, 'Hideaway');
+  assert.match(withPet.text, /Pets: 1/);
+  assert.match(withPet.html, />Pets</);
+  const none = bookingConfirmationEmail({ id: 'AC-3', guest: { name: 'Sam', email: 's@example.com' }, quote: { ...quote, pets: 0 } } as unknown as Booking, 'Hideaway');
+  assert.doesNotMatch(none.text, /Pets/);
+});

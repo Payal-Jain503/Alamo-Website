@@ -28,6 +28,7 @@ export function bookingConfirmationEmail(b: Booking, homeName: string, contact: 
     `Check-in: ${b.quote.checkIn}`,
     `Check-out: ${b.quote.checkOut} (${b.quote.nights.length} nights)`,
     `Guests: ${b.quote.guests}`,
+    ...(b.quote.pets ? [`Pets: ${b.quote.pets}`] : []),
     '',
     `Nights: ${formatUsd(b.quote.nightsTotal)}`,
     ...b.quote.fees.map((f) => `${f.label}: ${formatUsd(f.amount)}`),
@@ -81,6 +82,7 @@ ${stay('Home', escapeHtml(homeName))}
 ${stay('Check-in', escapeHtml(longDate(b.quote.checkIn)))}
 ${stay('Check-out', `${escapeHtml(longDate(b.quote.checkOut))} (${b.quote.nights.length} ${b.quote.nights.length === 1 ? 'night' : 'nights'})`)}
 ${stay('Guests', String(b.quote.guests))}
+${b.quote.pets ? stay('Pets', String(b.quote.pets)) : ''}
 </table></td></tr>
 <tr><td style="padding:16px 28px 0">
 <p style="margin:0 0 4px;font-weight:700">Payment</p>

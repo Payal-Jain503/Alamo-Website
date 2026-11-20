@@ -14,7 +14,7 @@ const sections = [
     items: [
       'Bookings are confirmed once payment is received.',
       'Prices include nightly rates, a cleaning fee and Texas hotel occupancy taxes, shown separately before you pay.',
-      'Deposit and payment schedule: to be confirmed.',
+      'The full amount is charged to your card when you book. There is no separate deposit.',
     ],
   },
   {
@@ -34,7 +34,9 @@ const sections = [
     items: [
       'No parties or events without written approval.',
       'Respect quiet hours and our neighbours.',
-      'Pets, smoking and the maximum number of guests: listed on each home once confirmed.',
+      'No smoking inside any home.',
+      'Pets are welcome at most homes for a one-time pet fee per pet, shown before you pay. Sitio Plains and Grey Woodpecker do not allow pets.',
+      'Each home’s page shows the most guests it sleeps.',
     ],
   },
 ];
