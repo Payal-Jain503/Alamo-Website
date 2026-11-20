@@ -79,7 +79,9 @@ const fakeClient = (price: number, over: Partial<{ currency: string; error: stri
 
 test('synced PriceLabs prices are used in quotes, and stale ones are not', async () => {
   const { svc, store } = service(fakeClient(350));
-  assert.deepEqual((await svc.syncRates()).failed, []);
+  const summary = (await svc.syncRates()) as { failed: string[]; listings: Record<string, string> };
+  assert.deepEqual(summary.failed, []);
+  assert.match(summary.listings.crimson!, /\[.+ #.+\]$/);
   const q = await svc.quote({ homeId: 'crimson', checkIn: '2026-12-10', checkOut: '2026-12-13', guests: 2 });
   assert.equal(q.status, 200);
   assert.equal((q.body as { signed: { quote: { nightsTotal: number } } }).signed.quote.nightsTotal, 35_000 + 20_000 * 2);
