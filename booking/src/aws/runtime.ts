@@ -104,10 +104,12 @@ async function build(): Promise<Runtime> {
   const db = DynamoDBDocumentClient.from(new DynamoDBClient({}), { marshallOptions: { removeUndefinedValues: true } });
   const sns = new SNSClient({});
   const topicArn = env('ALERT_TOPIC_ARN');
+  // Technical alerts use their own topic when one is set; otherwise they go to the owner as before.
+  const technicalTopicArn = process.env.TECH_ALERT_TOPIC_ARN || topicArn;
   const alerts: Alerts = {
-    async send(subject, message) {
+    async send(subject, message, kind) {
       // SNS email subjects are limited to 100 characters.
-      await sns.send(new PublishCommand({ TopicArn: topicArn, Subject: subject.slice(0, 100), Message: message }));
+      await sns.send(new PublishCommand({ TopicArn: kind === 'technical' ? technicalTopicArn : topicArn, Subject: subject.slice(0, 100), Message: message }));
     },
   };
 

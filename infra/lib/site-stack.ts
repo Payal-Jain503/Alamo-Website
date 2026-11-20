@@ -30,8 +30,9 @@ export interface SiteStackProps extends StackProps {
   /** Where booking emails and calendar alerts go. */
   ownerEmail: string;
   /**
-   * Where technical alarms (a function failing repeatedly) go. When left out they go to ownerEmail,
-   * as before. Set it to keep AWS error emails away from the owner.
+   * Where technical alarms and alerts go (a function failing repeatedly, PriceLabs not updating, a calendar link not
+   * reading). When left out they go to ownerEmail, as before. Set it to keep them away from the owner, who then only
+   * gets booking and cancellation news.
    */
   alarmEmail?: string;
   /** Parameter Store prefix for the secrets, for example /alamo-web/. */
@@ -113,7 +114,7 @@ export class SiteStack extends Stack {
       runtime: lambda.Runtime.NODEJS_22_X,
       architecture: lambda.Architecture.ARM_64,
       memorySize: 512,
-      environment: { TABLE_NAME: table.tableName, USER_POOL_ID: userPool.userPoolId, USER_POOL_CLIENT_ID: userPoolClient.userPoolClientId, ALERT_TOPIC_ARN: alerts.topicArn, PARAMETER_PREFIX: prefix, NODE_OPTIONS: '--enable-source-maps' },
+      environment: { TABLE_NAME: table.tableName, USER_POOL_ID: userPool.userPoolId, USER_POOL_CLIENT_ID: userPoolClient.userPoolClientId, ALERT_TOPIC_ARN: alerts.topicArn, TECH_ALERT_TOPIC_ARN: alarmTopic.topicArn, PARAMETER_PREFIX: prefix, NODE_OPTIONS: '--enable-source-maps' },
       bundling: {
         format: OutputFormat.ESM,
         target: 'node22',
@@ -145,6 +146,7 @@ export class SiteStack extends Stack {
     for (const fn of [api, jobs]) {
       table.grantReadWriteData(fn);
       alerts.grantPublish(fn);
+      alarmTopic.grantPublish(fn);
       fn.addToRolePolicy(
         new iam.PolicyStatement({
           // Reading a path needs access to the path itself and to the parameters under it.

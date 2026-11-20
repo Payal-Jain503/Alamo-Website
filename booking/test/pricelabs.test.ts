@@ -63,7 +63,7 @@ function service(client: PriceLabsClient | undefined, store = new InMemoryRateSt
     holds: new InMemoryHoldRepository(),
     feeds: new InMemoryFeedStore(),
     payments: { authorize: async () => ({ paymentId: 'p', clientSecret: 'c' }), capture: async () => {}, cancel: async () => {}, refund: async () => {}, authorizedAmount: async () => undefined },
-    alerts: { send: async (s) => void sent.push(s) },
+    alerts: { send: async (s, _m, kind) => void sent.push(kind === 'technical' ? s : `${s} (owner)`) },
     secrets: { quoteSecret: 'quote-secret-that-is-long-enough-12345', exportSecret: 'export-secret', feedUrls: {} },
     rates: client && { client, store },
     now: () => new Date(now),
