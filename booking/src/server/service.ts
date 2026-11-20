@@ -155,8 +155,10 @@ export class BookingService {
         failed.push(`${home.name} (${err instanceof Error ? err.message : String(err)})`);
       }
     }
+    // Which PriceLabs listing each home is priced from, so a wrong match can be spotted in the job log.
+    const listings = Object.fromEntries([...matched].map(([homeId, l]) => [homeId, `${l.name} [${l.pms} #${l.id}]`]));
     if (failed.length) await this.deps.alerts.send('PriceLabs rates not updating', `Could not read PriceLabs prices for: ${failed.join(', ')}. Those homes keep their last prices for up to 2 days, then fall back to the standard rates.`);
-    return { saved, failed, unmatched };
+    return { saved, failed, unmatched, listings };
   }
 
   home(id: string): HomeConfig | undefined {
