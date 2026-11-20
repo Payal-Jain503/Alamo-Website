@@ -41,7 +41,7 @@ function setup(opts: { blocks?: Block[]; fresh?: boolean; plan?: RatePlan } = {}
   const released: string[] = [];
   const confirmed: string[] = [];
   const calendar = { blocks: opts.blocks ?? [], fresh: opts.fresh ?? true };
-  const payments: PaymentGateway & { failAuthorize?: boolean; failCapture?: boolean } = {
+  const payments: PaymentGateway & { failAuthorize?: boolean; failCapture?: boolean; authorized?: Map<string, number>; failLookup?: boolean } = {
     async authorize(i) {
       calls.push(`authorize ${i.amount} ${i.idempotencyKey}`);
       if (payments.failAuthorize) throw new Error('card declined');
@@ -56,6 +56,10 @@ function setup(opts: { blocks?: Block[]; fresh?: boolean; plan?: RatePlan } = {}
     },
     async refund(id, amount, key) {
       calls.push(`refund ${id} ${amount} ${key}`);
+    },
+    async authorizedAmount(id) {
+      if (payments.failLookup) throw new Error('Stripe unreachable');
+      return payments.authorized?.get(id);
     },
   };
   const holds = new InMemoryHoldRepository();
@@ -292,4 +296,32 @@ test('a run that stopped after the final check started picks up on the next Stri
   const r = await confirmPayment(t.deps, { holdId: start.holdId, paymentId: 'pi_h_test0001', amount: t.total });
   assert.ok(r.ok && !r.alreadyConfirmed);
   assert.equal(await sweepExpiredHolds(t.deps), 0);
+});
+
+test('the sweeper books a hold whose card was authorised but whose webhook never arrived', async () => {
+  const t = setup();
+  const start = await startCheckout(t.deps, { signed: t.signed, guest });
+  assert.ok(start.ok);
+  // The guest paid in time, but Stripe's amount_capturable_updated webhook was never handled.
+  t.payments.authorized = new Map([['pi_h_test0001', t.total]]);
+  t.advance(HOLD_MINUTES + SWEEP_GRACE_MINUTES + 1);
+  assert.equal(await sweepExpiredHolds(t.deps), 0);
+  assert.equal((await t.holds.get(start.holdId))?.status, 'confirmed');
+  assert.ok(t.calls.includes('capture pi_h_test0001 capture-h_test0001'));
+  assert.ok(!t.calls.some((c) => c.startsWith('cancel')));
+  assert.equal((await t.nights.get('sa-5br', '2026-11-10'))?.status, 'booked');
+  assert.deepEqual(t.released, []);
+});
+
+test('the sweeper leaves an expired hold alone when it cannot ask Stripe whether it was paid', async () => {
+  const t = setup();
+  const start = await startCheckout(t.deps, { signed: t.signed, guest });
+  assert.ok(start.ok);
+  t.payments.failLookup = true;
+  t.advance(HOLD_MINUTES + SWEEP_GRACE_MINUTES + 1);
+  assert.equal(await sweepExpiredHolds(t.deps), 0);
+  assert.equal((await t.holds.get(start.holdId))?.status, 'awaiting-payment');
+  assert.ok(!t.calls.some((c) => c.startsWith('cancel')));
+  t.payments.failLookup = false;
+  assert.equal(await sweepExpiredHolds(t.deps), 1);
 });

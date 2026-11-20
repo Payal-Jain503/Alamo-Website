@@ -58,6 +58,8 @@ export interface PaymentGateway {
   cancel(paymentId: string, idempotencyKey: string): Promise<void>;
   /** Sends part or all of a charged payment back to the guest's card. */
   refund(paymentId: string, amount: number, idempotencyKey: string): Promise<void>;
+  /** The amount the guest's card is authorised for and waiting to be charged, or undefined if it isn't (not paid yet, failed or cancelled). */
+  authorizedAmount(paymentId: string): Promise<number | undefined>;
 }
 
 /**
@@ -273,11 +275,33 @@ export async function paymentFailed(deps: CheckoutDeps, holdId: string): Promise
   if (hold?.status === 'awaiting-payment') await releaseHold(deps, hold, 'payment-failed');
 }
 
-/** Runs every few minutes: releases holds whose time ran out and cancels their card authorisations. */
+/**
+ * Runs every few minutes: releases holds whose time ran out and cancels their card authorisations.
+ * Before giving a hold up it asks Stripe whether the guest's card was in fact authorised. If it was,
+ * the webhook that should have booked it never arrived (or failed), so the booking is finished here
+ * instead of cancelling a guest who paid in time.
+ */
 export async function sweepExpiredHolds(deps: CheckoutDeps): Promise<number> {
   const cutoff = new Date(deps.now().getTime() - SWEEP_GRACE_MINUTES * 60_000);
   let released = 0;
-  for (const hold of await deps.holds.expired(cutoff)) if (await releaseHold(deps, hold, 'expired')) released++;
+  for (const hold of await deps.holds.expired(cutoff)) {
+    if (hold.paymentId) {
+      let amount: number | undefined;
+      try {
+        amount = await deps.payments.authorizedAmount(hold.paymentId);
+      } catch (err) {
+        // Can't tell whether the guest paid, so leave the hold for the next run rather than cancel a paid card.
+        console.error('Could not check payment for expired hold', hold.id, err);
+        continue;
+      }
+      if (amount !== undefined) {
+        console.warn(JSON.stringify({ msg: 'Stripe webhook missed: confirming paid hold from the sweeper', holdId: hold.id, paymentId: hold.paymentId }));
+        await confirmPayment(deps, { holdId: hold.id, paymentId: hold.paymentId, amount });
+        continue;
+      }
+    }
+    if (await releaseHold(deps, hold, 'expired')) released++;
+  }
   return released;
 }
 

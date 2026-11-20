@@ -37,7 +37,7 @@ async function setup() {
     nights,
     holds,
     feeds: new InMemoryFeedStore(),
-    payments: { authorize: async () => ({ paymentId: 'p', clientSecret: 'c' }), capture: async () => {}, cancel: async () => {}, refund: async (id, amount, key) => void refunds.push(`${id} ${amount} ${key}`) },
+    payments: { authorize: async () => ({ paymentId: 'p', clientSecret: 'c' }), capture: async () => {}, cancel: async () => {}, refund: async (id, amount, key) => void refunds.push(`${id} ${amount} ${key}`), authorizedAmount: async () => undefined },
     alerts: { send: async (s) => void alerts.push(s) },
     secrets: { quoteSecret: 'quote-secret-that-is-long-enough-12345', exportSecret: 'export-secret', feedUrls: {} },
     now: () => new Date('2026-11-03T15:00:00Z'),

@@ -58,6 +58,16 @@ export class StripeGateway implements PaymentGateway {
     await this.call('refunds', { payment_intent: paymentId, amount: String(amount) }, idempotencyKey);
   }
 
+  async authorizedAmount(paymentId: string) {
+    const response = await this.fetchImpl(`https://api.stripe.com/v1/payment_intents/${encodeURIComponent(paymentId)}`, {
+      headers: { authorization: `Bearer ${this.secretKey}` },
+      signal: AbortSignal.timeout(20_000),
+    });
+    const body = (await response.json()) as { status?: string; amount_capturable?: number; error?: { message?: string; code?: string } };
+    if (!response.ok) throw new StripeError(response.status, body.error?.message ?? 'Stripe request failed', body.error?.code);
+    return body.status === 'requires_capture' && body.amount_capturable ? body.amount_capturable : undefined;
+  }
+
   async cancel(paymentId: string, idempotencyKey: string) {
     try {
       await this.call(`payment_intents/${encodeURIComponent(paymentId)}/cancel`, {}, idempotencyKey);
