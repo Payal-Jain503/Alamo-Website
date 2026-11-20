@@ -121,6 +121,7 @@ function placeholderHome(id: string, name: string, rate?: Rate): HomeConfig {
     sources: ['airbnb', 'vrbo'],
     ...(monthly ? { dynamicRates: false } : {}),
     plan: {
+      ...(monthly ? { periodPrice: { per: 30, amount: monthly * 100 } } : {}),
       baseNightly: nightly ? Math.round(nightly * 100) : 20_000,
       weekendNightly: nightly ? Math.round(nightly * 100) : 25_000,
       minStay: monthly ? 30 : 2,
