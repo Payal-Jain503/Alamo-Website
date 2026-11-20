@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { getAccount } from '@/lib/auth';
 import { StayCalendar } from '@/components/StayCalendar';
 import { DateRangeFields } from '@/components/DateRangeFields';
@@ -25,8 +25,8 @@ import {
 // Stripe's script only loads once a guest reaches the payment step.
 const CardPayment = dynamic(() => import('@/components/CardPayment').then((m) => m.CardPayment), { ssr: false });
 
-/** How far ahead the calendar goes. The server enforces each home's own booking window. */
-const CALENDAR_DAYS = 540;
+/** How far ahead the calendar goes: every home takes bookings up to a year ahead, and the server enforces it. */
+const CALENDAR_DAYS = 365;
 const POLL_MS = 2_000;
 const POLL_LIMIT = 45;
 
@@ -45,7 +45,7 @@ type Step =
  * card. Otherwise, before launch or for homes not yet online, it sends them
  * to the enquiry form with their dates.
  */
-export function BookingPanel({ slug, homeName, phone }: { slug: string; homeName: string; phone: string }) {
+export function BookingPanel({ slug, homeName, phone, maxGuests }: { slug: string; homeName: string; phone: string; maxGuests?: number }) {
   const [blocked, setBlocked] = useState<Set<string> | null | undefined>(undefined);
 
   useEffect(() => {
@@ -59,9 +59,9 @@ export function BookingPanel({ slug, homeName, phone }: { slug: string; homeName
       {blocked === undefined ? (
         <p className="muted small">Loading the calendar…</p>
       ) : blocked === null ? (
-        <EnquiryPanel slug={slug} />
+        <EnquiryPanel slug={slug} maxGuests={maxGuests} />
       ) : (
-        <LiveBooking slug={slug} blocked={blocked} reload={() => getAvailability(slug).then(setBlocked, () => {})} />
+        <LiveBooking slug={slug} blocked={blocked} maxGuests={maxGuests} reload={() => getAvailability(slug).then(setBlocked, () => {})} />
       )}
       <p className="panel-phone">
         Or call <a href={`tel:${phone.replace(/[^\d+]/g, '')}`}>{phone}</a>
@@ -70,7 +70,7 @@ export function BookingPanel({ slug, homeName, phone }: { slug: string; homeName
   );
 }
 
-function LiveBooking({ slug, blocked, reload }: { slug: string; blocked: Set<string>; reload: () => void }) {
+function LiveBooking({ slug, blocked, maxGuests, reload }: { slug: string; blocked: Set<string>; maxGuests?: number; reload: () => void }) {
   const today = todayInTexas();
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
@@ -97,21 +97,25 @@ function LiveBooking({ slug, blocked, reload }: { slug: string; blocked: Set<str
     };
   }, []);
   const stayKey = `${checkIn}|${checkOut}|${guests}|${pet}`;
+  // Only the newest price request may update the box, so a slow answer for old guests or dates can't replace it.
+  const latestQuote = useRef(0);
 
   const fetchQuote = useCallback(async () => {
+    const request = ++latestQuote.current;
     setSigned(null);
     setError('');
     const n = Number(guests);
-    if (!checkIn || !checkOut || !Number.isInteger(n) || n < 1) return;
+    if (!checkIn || !checkOut || !Number.isInteger(n) || n < 1) return setQuoting(false);
     setQuoting(true);
     try {
       const { body } = await getQuote({ homeId: slug, checkIn, checkOut, guests: n, pets: Math.max(0, Math.floor(Number(pet) || 0)) });
+      if (request !== latestQuote.current) return;
       if (body.signed) setSigned(body.signed);
       else setError(body.error === 'unavailable' ? problemMessage('unavailable') : (body.message ?? problemMessage(body.error ?? '')));
     } catch {
-      setError(problemMessage(''));
+      if (request === latestQuote.current) setError(problemMessage(''));
     } finally {
-      setQuoting(false);
+      if (request === latestQuote.current) setQuoting(false);
     }
   }, [slug, checkIn, checkOut, guests, pet]);
 
@@ -237,7 +241,7 @@ function LiveBooking({ slug, blocked, reload }: { slug: string; blocked: Set<str
       />
       <div className="field">
         <span>Guests</span>
-        <GuestStepper value={guests} onChange={setGuests} />
+        <GuestStepper value={guests} onChange={setGuests} max={maxGuests} />
       </div>
       <label>
         <span>Number of pets</span>
@@ -309,7 +313,7 @@ function LiveBooking({ slug, blocked, reload }: { slug: string; blocked: Set<str
 }
 
 /** Before online booking is live for a home: send the dates to the enquiry form. */
-function EnquiryPanel({ slug }: { slug: string }) {
+function EnquiryPanel({ slug, maxGuests }: { slug: string; maxGuests?: number }) {
   const router = useRouter();
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
@@ -346,7 +350,7 @@ function EnquiryPanel({ slug }: { slug: string }) {
         </div>
         <div className="field">
           <span>Guests</span>
-          <GuestStepper id="bp-guests" value={guests} onChange={setGuests} />
+          <GuestStepper id="bp-guests" value={guests} onChange={setGuests} max={maxGuests} />
         </div>
         {error ? (
           <p className="form-error" role="alert">
