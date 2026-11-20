@@ -92,3 +92,10 @@ test('mid-term homes charge exactly their monthly price for 30 nights, and a fai
   assert.ok(fortyFive.ok);
   assert.equal(fortyFive.quote.nightsTotal, 825_000);
 });
+
+test('the pet fee is taxed like the rest of the stay', () => {
+  const q = quoteStay(home('hideaway').plan, { checkIn: '2027-01-12', checkOut: '2027-01-14', guests: 2, pets: 1 }, [], '2026-11-20');
+  assert.ok(q.ok);
+  // $562 nights + $180 cleaning + $50 pet = $792, taxed at 6% + 2% + 9%.
+  assert.deepEqual(q.quote.taxes.map((t) => t.amount), [4_752, 1_584, 7_128]);
+});

@@ -63,7 +63,8 @@ const SAN_ANTONIO_TAX: [number, number, number] = [6, 2, 9];
 
 export function taxesFor(id: string): HomeConfig['plan']['taxes'] {
   const [state, county, city] = TAX_PERCENT[id] ?? SAN_ANTONIO_TAX;
-  const appliesTo: Array<'nights' | 'cleaning' | 'extraGuests'> = ['nights', 'cleaning', 'extraGuests'];
+  // Pet fees are taxed like the other charges for the stay (the City of Austin lists pet charges as taxable).
+  const appliesTo: Array<'nights' | 'cleaning' | 'extraGuests' | 'pets'> = ['nights', 'cleaning', 'extraGuests', 'pets'];
   return [
     { name: `Texas state hotel tax (${state}%)`, rateBps: state * 100, appliesTo },
     { name: `County hotel tax (${county}%)`, rateBps: county * 100, appliesTo },
