@@ -57,7 +57,8 @@ export interface FeedStore {
 
 /** Messages to the owner. Production sends them by email through SNS. */
 export interface Alerts {
-  send(subject: string, message: string): Promise<void>;
+  /** 'owner' (the default) is booking news for the client. 'technical' is for whoever looks after the site's connections. */
+  send(subject: string, message: string, kind?: 'owner' | 'technical'): Promise<void>;
 }
 
 export interface ServiceDeps {
@@ -169,9 +170,10 @@ export class BookingService {
       await this.deps.alerts.send(
         'Homes not priced from PriceLabs',
         `These homes have no clear PriceLabs listing, so the website charges their standard nightly rate instead of PriceLabs prices: ${unmatched.join(', ')}. Rename the listing in PriceLabs to include the home's name, or ask for the name to be added to the website's list.`,
+        'technical',
       );
     }
-    if (failed.length) await this.deps.alerts.send('PriceLabs rates not updating', `Could not read PriceLabs prices for: ${failed.join(', ')}. Those homes keep their last prices for up to 2 days, then fall back to the standard rates.`);
+    if (failed.length) await this.deps.alerts.send('PriceLabs rates not updating', `Could not read PriceLabs prices for: ${failed.join(', ')}. Those homes keep their last prices for up to 2 days, then fall back to the standard rates.`, 'technical');
     return { saved, failed, unmatched, listings };
   }
 
@@ -440,6 +442,7 @@ export class BookingService {
           await this.deps.alerts.send(
             `${o.state.source} calendar not reading: ${home.name}`,
             `The ${o.state.source} calendar for ${home.name} failed ${FAILURES_BEFORE_ALERT} times in a row (${o.state.lastError}). Its last known dates are still blocked. Check that the iCal link still works.`,
+            'technical',
           );
         }
       }
