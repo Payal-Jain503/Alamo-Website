@@ -110,6 +110,13 @@ export type ApiResult<T> = { status: number; body: T };
 /** Release reasons the owner should hear about. Expired and abandoned checkouts are normal. */
 const OWNER_REASONS = new Set<ReleaseReason>(['calendar-conflict', 'calendar-unavailable', 'amount-mismatch', 'capture-failed']);
 
+/** The hour (Texas time) of the one daily rates run that reports homes with no PriceLabs match. */
+const UNMATCHED_ALERT_HOUR = 8;
+
+function hourInTimeZone(now: Date, timeZone: string): number {
+  return Number(new Intl.DateTimeFormat('en-US', { timeZone, hour: 'numeric', hourCycle: 'h23' }).format(now));
+}
+
 /** How far the export token is cut. 128 bits is plenty for an unguessable link. */
 const EXPORT_TOKEN_LENGTH = 32;
 
@@ -157,6 +164,13 @@ export class BookingService {
     }
     // Which PriceLabs listing each home is priced from, so a wrong match can be spotted in the job log.
     const listings = Object.fromEntries([...matched].map(([homeId, l]) => [homeId, `${l.name} [${l.pms} #${l.id}]`]));
+    // A home with no PriceLabs match silently charges its standard rate, so the owner hears about it once a day.
+    if (unmatched.length && hourInTimeZone(this.now(), 'America/Chicago') === UNMATCHED_ALERT_HOUR) {
+      await this.deps.alerts.send(
+        'Homes not priced from PriceLabs',
+        `These homes have no clear PriceLabs listing, so the website charges their standard nightly rate instead of PriceLabs prices: ${unmatched.join(', ')}. Rename the listing in PriceLabs to include the home's name, or ask for the name to be added to the website's list.`,
+      );
+    }
     if (failed.length) await this.deps.alerts.send('PriceLabs rates not updating', `Could not read PriceLabs prices for: ${failed.join(', ')}. Those homes keep their last prices for up to 2 days, then fall back to the standard rates.`);
     return { saved, failed, unmatched, listings };
   }

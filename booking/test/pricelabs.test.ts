@@ -122,3 +122,14 @@ test('a pinned home uses only its own listing even when other listings share its
   const { matched } = matchListings([{ id: 'stormy-skies', name: 'Stormy Skies' }], stormy);
   assert.equal(matched.get('stormy-skies')!.id, 'S1');
 });
+
+test('homes with no PriceLabs match are reported once a day, on the 8 AM Texas run', async () => {
+  const noMatch = { listings: async () => [listings[1]!], prices: async () => ({ currency: 'USD', days: [] }) } as unknown as PriceLabsClient;
+  const early = service(noMatch);
+  const r = (await early.svc.syncRates()) as { unmatched: string[] };
+  assert.deepEqual(r.unmatched, ['Crimson Star']);
+  assert.deepEqual(early.sent, []);
+  const eight = service(noMatch, new InMemoryRateStore(), '2026-11-04T14:49:00Z');
+  await eight.svc.syncRates();
+  assert.deepEqual(eight.sent, ['Homes not priced from PriceLabs']);
+});
