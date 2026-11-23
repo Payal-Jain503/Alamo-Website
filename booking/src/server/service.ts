@@ -396,8 +396,26 @@ export class BookingService {
 
   /** What the website shows after the card step: still checking, booked, or released. */
   async holdStatus(holdId: string) {
-    const hold = await this.deps.holds.get(holdId);
+    let hold = await this.deps.holds.get(holdId);
     if (!hold) return { status: 404, body: { error: 'unknown-hold' } };
+    // The guest's page asks this every couple of seconds after paying. If Stripe's "card authorised" notice is
+    // late or never came, ask Stripe directly and finish the booking now, so confirmation takes seconds, not minutes.
+    // Nothing the browser sends decides this: only Stripe's own answer about this hold's payment does.
+    if (hold.status === 'awaiting-payment' && hold.paymentId) {
+      try {
+        const amount = await this.deps.payments.authorizedAmount(hold.paymentId);
+        if (amount) {
+          const home = this.home(hold.homeId);
+          const deps = this.checkoutDeps();
+          if (home) deps.today = () => this.today(home);
+          await confirmPayment(deps, { holdId: hold.id, paymentId: hold.paymentId, amount });
+          hold = (await this.deps.holds.get(holdId)) ?? hold;
+        }
+      } catch (err) {
+        // The notice or the cleanup job will still finish it; the page just keeps waiting.
+        console.error('Could not confirm a paid hold from the status check', holdId, err);
+      }
+    }
     return { status: 200, body: { status: hold.status, bookingId: hold.status === 'confirmed' ? hold.bookingId : undefined, reason: hold.releaseReason } };
   }
 
