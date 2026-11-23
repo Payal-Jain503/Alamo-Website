@@ -41,9 +41,10 @@ function setup(opts: { blocks?: Block[]; fresh?: boolean; plan?: RatePlan } = {}
   const released: string[] = [];
   const confirmed: string[] = [];
   const calendar = { blocks: opts.blocks ?? [], fresh: opts.fresh ?? true };
-  const payments: PaymentGateway & { failAuthorize?: boolean; failCapture?: boolean; authorized?: Map<string, number>; failLookup?: boolean } = {
+  const payments: PaymentGateway & { failAuthorize?: boolean; failCapture?: boolean; authorized?: Map<string, number>; failLookup?: boolean; description?: string } = {
     async authorize(i) {
       calls.push(`authorize ${i.amount} ${i.idempotencyKey}`);
+      payments.description = i.description;
       if (payments.failAuthorize) throw new Error('card declined');
       return { paymentId: `pi_${i.holdId}`, clientSecret: `secret_${i.holdId}` };
     },
@@ -93,6 +94,7 @@ test('happy path: hold, authorise, final check, capture, booking', async () => {
   const start = await startCheckout(t.deps, { signed: t.signed, guest });
   assert.ok(start.ok);
   assert.equal(start.clientSecret, 'secret_h_test0001');
+  assert.equal(t.payments.description, 'Stay Nov 9 to Nov 12, 2026 (3 nights)');
   assert.equal(Date.parse(start.expiresAt) - t.deps.now().getTime(), HOLD_MINUTES * 60_000);
   assert.equal((await t.nights.get('sa-5br', '2026-11-10'))?.status, 'held');
 

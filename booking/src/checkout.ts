@@ -52,7 +52,7 @@ export type ReleaseReason = 'payment-failed' | 'calendar-conflict' | 'calendar-u
 /** The card side of checkout. The Stripe adapter implements this. */
 export interface PaymentGateway {
   /** Authorises the amount on the guest's card without charging it. */
-  authorize(input: { amount: number; currency: 'usd'; holdId: string; homeId: string; email: string; idempotencyKey: string }): Promise<{ paymentId: string; clientSecret: string }>;
+  authorize(input: { amount: number; currency: 'usd'; holdId: string; homeId: string; email: string; idempotencyKey: string; description?: string }): Promise<{ paymentId: string; clientSecret: string }>;
   capture(paymentId: string, idempotencyKey: string): Promise<void>;
   /** Drops the authorisation, so nothing is charged. Safe to call more than once. */
   cancel(paymentId: string, idempotencyKey: string): Promise<void>;
@@ -127,6 +127,14 @@ export type StartResult =
   | { ok: false; problem: 'price-changed'; quote: Quote }
   | { ok: false; problem: 'dates-taken'; takenNights: string[] };
 
+/** The line on the card receipt, e.g. "Stay Apr 13 to Apr 14, 2027 (1 night)". */
+function stayDescription(checkIn: string, checkOut: string): string {
+  const day = (iso: string, year: boolean) =>
+    new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', ...(year ? { year: 'numeric' } : {}), timeZone: 'UTC' });
+  const nights = Math.round((Date.parse(checkOut) - Date.parse(checkIn)) / 86_400_000);
+  return `Stay ${day(checkIn, false)} to ${day(checkOut, true)} (${nights} night${nights === 1 ? '' : 's'})`;
+}
+
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
@@ -179,6 +187,7 @@ export async function startCheckout(deps: CheckoutDeps, input: { signed: SignedQ
       holdId,
       homeId,
       email: guest.email,
+      description: stayDescription(requote.quote.checkIn, requote.quote.checkOut),
       idempotencyKey: `authorize-${holdId}`,
     });
   } catch {

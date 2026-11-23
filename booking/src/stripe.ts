@@ -42,6 +42,7 @@ export class StripeGateway implements PaymentGateway {
         // Bank debits can't be held and released, so the hold-then-charge flow uses cards and wallets only.
         'automatic_payment_methods[allow_redirects]': 'never',
         receipt_email: input.email,
+        ...(input.description ? { description: input.description } : {}),
         'metadata[holdId]': input.holdId,
         'metadata[homeId]': input.homeId,
       },
