@@ -422,11 +422,16 @@ export class BookingService {
   async stripeWebhook(rawBody: string, signature: string | undefined): Promise<ApiResult<{ received: boolean; error?: string }>> {
     const secret = this.deps.secrets.stripeWebhookSecret;
     // Never check a signature against an empty secret: anyone could forge one.
-    if (!secret) return { status: 503, body: { received: false, error: 'payments-not-configured' } };
+    if (!secret) {
+      console.error('Stripe webhook refused: no webhook signing secret is saved (/stripe/webhook-secret), so no payment can be confirmed');
+      return { status: 503, body: { received: false, error: 'payments-not-configured' } };
+    }
     if (!verifyStripeSignature(rawBody, signature, secret, this.now())) {
+      console.error('Stripe webhook refused: the signature does not match the saved signing secret (wrong secret, or the endpoint is in a different Stripe mode)');
       return { status: 400, body: { received: false, error: 'bad-signature' } };
     }
     const event = readCheckoutEvent(JSON.parse(rawBody));
+    console.log(JSON.stringify({ stripeWebhook: event.type, ...('holdId' in event ? { holdId: event.holdId } : {}) }));
     if (event.type === 'authorized') await confirmPayment(this.checkoutDeps(), event);
     if (event.type === 'failed') await paymentFailed(this.checkoutDeps(), event.holdId);
     return { status: 200, body: { received: true } };
