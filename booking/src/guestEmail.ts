@@ -105,3 +105,51 @@ ${contactLine ? `<p style="margin:0;color:${MUTED}">Questions? ${contactLine}</p
 </table></td></tr></table>
 </body></html>`;
 }
+
+/** The email a guest gets when they cancel: what was cancelled and what comes back to their card. */
+export function bookingCancellationEmail(b: Booking, homeName: string, refundCents: number, contact: { phone?: string; email?: string } = {}): { subject: string; text: string; html: string } {
+  const refundLine =
+    refundCents > 0
+      ? `Refund: ${formatUsd(refundCents)} of ${formatUsd(b.quote.total)} is going back to the card you paid with. It can take 5 to 10 business days to show on your statement.`
+      : `Refund: none, because the stay is too close to check-in under our cancellation policy.`;
+  const lines = [
+    `Hi ${b.guest.name},`,
+    '',
+    `Your booking has been cancelled.`,
+    '',
+    `Confirmation: ${b.id}`,
+    `Home: ${homeName}`,
+    `Dates: ${b.quote.checkIn} to ${b.quote.checkOut}`,
+    refundLine,
+    '',
+    `Cancellation policy: ${SITE}/policies`,
+    '',
+    contact.phone || contact.email ? `Questions? ${[contact.phone, contact.email].filter(Boolean).join(' or ')}.` : '',
+    '',
+    'Home Over Hotels',
+  ];
+  const row = (label: string, value: string) =>
+    `<tr><td style="padding:8px 0;color:${MUTED};width:30%;vertical-align:top">${escapeHtml(label)}</td><td style="padding:8px 0;color:${INK}">${escapeHtml(value)}</td></tr>`;
+  const contactLine = [contact.phone, contact.email].filter(Boolean).map((c) => escapeHtml(c!)).join(' or ');
+  const html = `<!doctype html>
+<html><body style="margin:0;padding:0;background:#f4f2ec;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:1.5;color:${INK}">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f2ec"><tr><td align="center" style="padding:24px 12px">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:8px;overflow:hidden">
+<tr><td style="background:${INK};padding:22px 28px;color:#ffffff;font-size:20px;letter-spacing:0.04em">Home <span style="color:#d8b26a">Over</span> Hotels</td></tr>
+<tr><td style="padding:28px 28px 8px">
+<p style="margin:0 0 4px;font-size:22px;font-weight:700">Your booking is cancelled</p>
+<p style="margin:0;color:${MUTED}">Hi ${escapeHtml(b.guest.name)}, here is what was cancelled and what comes back to you.</p>
+</td></tr>
+<tr><td style="padding:8px 28px 0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${LINE};border-bottom:1px solid ${LINE}">
+${row('Confirmation', b.id)}
+${row('Home', homeName)}
+${row('Dates', `${longDate(b.quote.checkIn)} to ${longDate(b.quote.checkOut)}`)}
+${row('Refund', refundCents > 0 ? `${formatUsd(refundCents)} of ${formatUsd(b.quote.total)}, back to your card in 5 to 10 business days` : 'None: too close to check-in under our cancellation policy')}
+</table></td></tr>
+<tr><td align="center" style="padding:24px 28px 28px">
+${contactLine ? `<p style="margin:0;color:${MUTED}">Questions? ${contactLine}</p>` : ''}
+</td></tr>
+</table></td></tr></table>
+</body></html>`;
+  return { subject: `Your booking ${b.id} is cancelled`, text: lines.join('\n'), html };
+}

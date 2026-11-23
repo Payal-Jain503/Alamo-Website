@@ -32,6 +32,7 @@ async function setup() {
   }
   const refunds: string[] = [];
   const alerts: string[] = [];
+  const mails: Array<{ to: string; subject: string; text: string; html?: string }> = [];
   const service = new BookingService({
     homes: [home],
     nights,
@@ -39,10 +40,11 @@ async function setup() {
     feeds: new InMemoryFeedStore(),
     payments: { authorize: async () => ({ paymentId: 'p', clientSecret: 'c' }), capture: async () => {}, cancel: async () => {}, refund: async (id, amount, key) => void refunds.push(`${id} ${amount} ${key}`), authorizedAmount: async () => undefined },
     alerts: { send: async (s) => void alerts.push(s) },
+    guestMail: { send: async (to, subject, text, html) => void mails.push({ to, subject, text, html }) },
     secrets: { quoteSecret: 'quote-secret-that-is-long-enough-12345', exportSecret: 'export-secret', feedUrls: {} },
     now: () => new Date('2026-11-03T15:00:00Z'),
   });
-  return { service, holds, nights, refunds, alerts };
+  return { service, holds, nights, refunds, alerts, mails };
 }
 
 test('5 or more days before check-in is a full refund and the dates reopen', async () => {
@@ -80,4 +82,23 @@ test('a failed refund changes nothing, so the guest can try again', async () => 
   };
   await assert.rejects(service.cancelBooking('pat@example.com', 'far'));
   assert.equal((await holds.bookings('sa')).some((b) => b.id === 'far'), true);
+});
+
+test('the guest gets a cancellation email with the refund amount', async () => {
+  const { service, mails } = await setup();
+  await service.cancelBooking('pat@example.com', 'far');
+  assert.equal(mails.length, 1);
+  assert.equal(mails[0]!.to, 'pat@example.com');
+  assert.match(mails[0]!.subject, /far is cancelled/);
+  assert.match(mails[0]!.text, /Refund: \$1,000\.01 of \$1,000\.01/);
+  assert.match(mails[0]!.html!, /5 to 10 business days/);
+  await service.cancelBooking('pat@example.com', 'near');
+  assert.match(mails[1]!.text, /Refund: \$500\.00 of \$1,000\.01/);
+});
+
+test('a failed cancellation email does not undo the cancellation and alerts the owner', async () => {
+  const { service, alerts } = await setup();
+  (service as unknown as { deps: { guestMail: unknown } }).deps.guestMail = { send: async () => { throw new Error('sender not verified'); } };
+  assert.equal((await service.cancelBooking('pat@example.com', 'far')).status, 200);
+  assert.ok(alerts.some((a) => /Cancellation email not sent for far/.test(a)));
 });

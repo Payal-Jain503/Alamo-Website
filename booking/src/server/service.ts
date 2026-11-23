@@ -20,7 +20,7 @@ import { addDays, dateInTimeZone } from '../dates.js';
 import { buildExportCalendar } from '../exportFeed.js';
 import { matchListings, RATES_MAX_AGE_MS, toOverrides, type PriceLabsClient, type RateStore } from '../pricelabs.js';
 import { lockedNights, type NightStore } from '../holds.js';
-import { bookingConfirmationEmail, type GuestMailer } from '../guestEmail.js';
+import { bookingCancellationEmail, bookingConfirmationEmail, type GuestMailer } from '../guestEmail.js';
 import { formatUsd, quoteStay, type QuoteProblem, type RatePlan, type StayRequest } from '../pricing.js';
 import { signQuote, type SignedQuote } from '../signedQuote.js';
 import { readCheckoutEvent, verifyStripeSignature } from '../stripe.js';
@@ -255,6 +255,17 @@ export class BookingService {
       `Booking cancelled: ${home.name}`,
       `${booking.guest.name} (${booking.guest.email}) cancelled ${booking.id}, ${booking.quote.checkIn} to ${booking.quote.checkOut}. Refund sent: ${formatUsd(refundCents)} of ${formatUsd(booking.quote.total)}. The dates are open again on the website and in the export calendar.`,
     );
+    // The cancellation is done and the refund is sent, so a failed email is reported to the owner and goes no further.
+    if (this.deps.guestMail) {
+      try {
+        const mail = bookingCancellationEmail(booking, home.name, refundCents, this.deps.contact);
+        await this.deps.guestMail.send(booking.guest.email, mail.subject, mail.text, mail.html);
+      } catch (err) {
+        await this.deps.alerts
+          .send(`Cancellation email not sent for ${booking.id}`, `The booking is cancelled, but the email to ${booking.guest.email} failed: ${err instanceof Error ? err.message : String(err)}`)
+          .catch(() => {});
+      }
+    }
     return { status: 200, body: { refundCents } };
   }
 
