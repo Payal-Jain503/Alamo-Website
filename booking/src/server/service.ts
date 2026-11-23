@@ -37,6 +37,8 @@ export interface HomeConfig {
   sources: Source[];
   /** False for homes with a set price (such as mid-term homes), which never use PriceLabs rates. */
   dynamicRates?: boolean;
+  /** False while a home's rates are still placeholders: its calendar still shows, but it cannot be quoted or booked online. */
+  onlineBooking?: boolean;
 }
 
 export interface Secrets {
@@ -301,18 +303,19 @@ export class BookingService {
   }
 
   /** Nights the website calendar shows as taken. No guest or source details leave the server. */
-  async availability(homeId: string): Promise<ApiResult<{ blocked: string[] } | { error: string }>> {
+  async availability(homeId: string): Promise<ApiResult<{ blocked: string[]; bookable?: false } | { error: string }>> {
     const home = this.home(homeId);
     if (!home) return { status: 404, body: { error: 'unknown-home' } };
     const today = this.today(home);
     const blocks = await this.knownBlocks(home);
     const blocked = [...nightMap(blocks, today, addDays(today, home.plan.bookingWindowDays)).keys()].sort();
-    return { status: 200, body: { blocked } };
+    return { status: 200, body: { blocked, ...(home.onlineBooking === false ? { bookable: false } : {}) } };
   }
 
-  async quote(input: { homeId: string } & StayRequest): Promise<ApiResult<{ signed: SignedQuote } | { error: QuoteProblem | 'unknown-home'; message?: string }>> {
+  async quote(input: { homeId: string } & StayRequest): Promise<ApiResult<{ signed: SignedQuote } | { error: QuoteProblem | 'unknown-home' | 'online-booking-off'; message?: string }>> {
     const home = this.home(input.homeId);
     if (!home) return { status: 404, body: { error: 'unknown-home' } };
+    if (home.onlineBooking === false) return { status: 422, body: { error: 'online-booking-off', message: 'Online booking isn’t open for this home yet. Send us a request and we’ll confirm it personally.' } };
     const stay: StayRequest = { checkIn: String(input.checkIn), checkOut: String(input.checkOut), guests: Number(input.guests), pets: input.pets ? Number(input.pets) : 0 };
     const result = quoteStay(await this.planFor(home), stay, await this.knownBlocks(home), this.today(home));
     if (!result.ok) return { status: 422, body: { error: result.problem, message: result.message } };
@@ -399,6 +402,7 @@ export class BookingService {
   async reserve(input: { signed: SignedQuote; guest: Guest }) {
     if (!input?.signed?.quote || !input.guest) return { status: 400, body: { ok: false, problem: 'bad-request' } };
     const home = this.home(input.signed.homeId);
+    if (home?.onlineBooking === false) return { status: 409, body: { ok: false, problem: 'online-booking-off' } };
     const deps = this.checkoutDeps();
     if (home) deps.today = () => this.today(home);
     const result = await startCheckout(deps, input);

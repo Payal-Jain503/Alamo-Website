@@ -99,3 +99,30 @@ test('the pet fee is taxed like the rest of the stay', () => {
   // $562 nights + $180 cleaning + $50 pet = $792, taxed at 6% + 2% + 9%.
   assert.deepEqual(q.quote.taxes.map((t) => t.amount), [4_752, 1_584, 7_128]);
 });
+
+test('homes with placeholder rates cannot be quoted or booked online until the client confirms real fees', async () => {
+  const { BookingService, InMemoryFeedStore } = await import('../src/server/service.js');
+  const { InMemoryHoldRepository } = await import('../src/checkout.js');
+  const { InMemoryNightStore } = await import('../src/holds.js');
+  const paused = ['colt-river', 'pendant-pass-theater', 'westmark-azim', 'southern-knoll'];
+  for (const id of paused) assert.equal(home(id).onlineBooking, false, id);
+  assert.equal(HOMES.filter((h) => h.onlineBooking === false).length, paused.length);
+  const svc = new BookingService({
+    homes: HOMES,
+    nights: new InMemoryNightStore(),
+    holds: new InMemoryHoldRepository(),
+    feeds: new InMemoryFeedStore(),
+    payments: { authorize: async () => ({ paymentId: 'p', clientSecret: 'c' }), capture: async () => {}, cancel: async () => {}, refund: async () => {}, authorizedAmount: async () => undefined },
+    alerts: { send: async () => {} },
+    secrets: { quoteSecret: 'quote-secret-that-is-long-enough-12345', exportSecret: 'x', feedUrls: {} },
+    now: () => new Date('2026-11-20T12:00:00Z'),
+  });
+  const q = await svc.quote({ homeId: 'colt-river', checkIn: '2027-01-12', checkOut: '2027-01-14', guests: 2 });
+  assert.equal(q.status, 422);
+  assert.deepEqual((q.body as { error: string }).error, 'online-booking-off');
+  const avail = await svc.availability('colt-river');
+  assert.equal(avail.status, 200);
+  assert.equal((avail.body as { bookable?: boolean }).bookable, false);
+  assert.equal(((await svc.availability('hideaway')).body as { bookable?: boolean }).bookable, undefined);
+  assert.equal((await svc.reserve({ signed: { homeId: 'colt-river', quote: {} } as never, guest: { name: 'A', email: 'a@b.co' } })).status, 409);
+});

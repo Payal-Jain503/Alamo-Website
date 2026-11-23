@@ -46,6 +46,9 @@ const RATES: Record<string, Rate> = {
 /** Mid-term homes: a 30-night minimum at a set price per 30 nights, in dollars. They do not use PriceLabs rates. */
 const MID_TERM: Record<string, number> = { almadin: 5_500, 'austin-burton': 2_600, 'amber-crest': 4_400, 'clay-oak': 5_400 };
 
+/** Homes whose rates and fees are still placeholders: guests see the request form instead of live booking until the client confirms real numbers. */
+const PLACEHOLDER_RATES = new Set(['colt-river', 'pendant-pass-theater', 'westmark-azim', 'southern-knoll']);
+
 /** Homes that do not allow pets. Every other home does, at $50 a stay unless its rate row says otherwise. */
 const NO_PETS = new Set(['sitio-plains', 'grey-woodpecker']);
 const DEFAULT_PET_FEE = 50;
@@ -121,6 +124,7 @@ function placeholderHome(id: string, name: string, rate?: Rate): HomeConfig {
     timeZone: 'America/Chicago',
     sources: ['airbnb', 'vrbo'],
     ...(monthly ? { dynamicRates: false } : {}),
+    ...(PLACEHOLDER_RATES.has(id) ? { onlineBooking: false } : {}),
     plan: {
       ...(monthly ? { periodPrice: { per: 30, amount: monthly * 100 } } : {}),
       baseNightly: nightly ? Math.round(nightly * 100) : 20_000,

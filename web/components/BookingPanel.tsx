@@ -11,6 +11,7 @@ import {
   STRIPE_PUBLISHABLE_KEY,
   addDays,
   getAvailability,
+  getBookingAvailability,
   getHold,
   getQuote,
   problemMessage,
@@ -50,7 +51,7 @@ export function BookingPanel({ slug, homeName, phone, maxGuests }: { slug: strin
 
   useEffect(() => {
     if (!STRIPE_PUBLISHABLE_KEY) return setBlocked(null);
-    getAvailability(slug).then(setBlocked, () => setBlocked(null));
+    getBookingAvailability(slug).then((a) => setBlocked(a.bookable ? a.blocked : null), () => setBlocked(null));
   }, [slug]);
 
   return (

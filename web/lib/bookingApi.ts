@@ -51,6 +51,13 @@ async function call<T>(path: string, init?: RequestInit): Promise<{ status: numb
   return { status: res.status, body: (await res.json()) as T };
 }
 
+/** Whether guests can book this home online, with its blocked nights. A home can show its calendar yet not be bookable. */
+export async function getBookingAvailability(homeId: string): Promise<{ blocked: Set<string>; bookable: boolean }> {
+  const { status, body } = await call<{ blocked?: string[]; bookable?: boolean }>(`/api/availability?home=${encodeURIComponent(homeId)}`);
+  if (status !== 200 || !body.blocked) throw new Error('No online booking for this home');
+  return { blocked: new Set(body.blocked), bookable: body.bookable !== false };
+}
+
 export async function getAvailability(homeId: string): Promise<Set<string>> {
   const { status, body } = await call<{ blocked?: string[] }>(`/api/availability?home=${encodeURIComponent(homeId)}`);
   if (status !== 200 || !body.blocked) throw new Error('No online booking for this home');
@@ -87,6 +94,8 @@ export function addDays(date: string, days: number) {
 /** What a guest reads when checkout stops. */
 export function problemMessage(problem: string, message?: string): string {
   switch (problem) {
+    case 'online-booking-off':
+      return 'Online booking isn’t open for this home yet. Please send us a request instead.';
     case 'dates-taken':
     case 'unavailable':
       return 'Someone has just booked some of these nights. Please choose other dates.';
