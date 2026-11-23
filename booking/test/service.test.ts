@@ -25,6 +25,7 @@ const reservation = (start: string, end: string, uid: string, summary = 'Reserve
   vevent({ 'DTSTART;VALUE=DATE': start.replaceAll('-', ''), 'DTEND;VALUE=DATE': end.replaceAll('-', ''), UID: uid, SUMMARY: summary });
 
 function setup(opts: { mailFails?: boolean } = {}) {
+  const stripe = { authorized: undefined as number | undefined };
   const clock = { now: new Date('2026-10-29T15:00:00Z') };
   const feeds: Record<string, string | Error> = {
     [AIRBNB]: ics(reservation('2026-11-02', '2026-11-06', 'a1@airbnb.com')),
@@ -43,7 +44,7 @@ function setup(opts: { mailFails?: boolean } = {}) {
     capture: async (id) => void charged.push(id),
     cancel: async () => {},
     refund: async () => {},
-    authorizedAmount: async () => undefined,
+    authorizedAmount: async () => stripe.authorized,
   };
   const holds = new InMemoryHoldRepository();
   const service = new BookingService({
@@ -75,7 +76,7 @@ function setup(opts: { mailFails?: boolean } = {}) {
       } satisfies HttpRequest,
       origin,
     );
-  return { service, feeds, alerts, mails, charged, holds, clock, call };
+  return { service, feeds, alerts, mails, charged, holds, clock, call, stripe };
 }
 
 function stripeEvent(type: string, intent: Record<string, unknown>, now: Date) {
@@ -282,4 +283,38 @@ test('pets are allowed at every home except Sitio Plains and Grey Woodpecker', a
   const noPets = HOMES.filter((h) => h.id !== 'test-one-dollar' && h.plan.petFee === undefined).map((h) => h.id).sort();
   assert.deepEqual(noPets, ['grey-woodpecker', 'sitio-plains']);
   assert.equal(HOMES.find((h) => h.id === 'bender-azim')!.plan.petFee, 5_000);
+});
+
+test('the status check books a paid hold at once when Stripe\'s notice has not arrived', async () => {
+  const s = setup();
+  const quote = await s.call('POST', '/api/quote', { body: { homeId: home.id, checkIn: '2026-11-09', checkOut: '2026-11-12', guests: 4 } });
+  const signed: SignedQuote = JSON.parse(quote.body).signed;
+  const { holdId } = JSON.parse((await s.call('POST', '/api/reserve', { body: { signed, guest } })).body);
+  const check = async () => JSON.parse((await s.call('GET', '/api/hold', { query: { id: holdId } })).body);
+
+  // The guest has not paid yet: Stripe has nothing authorised, so the hold keeps waiting and nothing is charged.
+  assert.equal((await check()).status, 'awaiting-payment');
+  assert.deepEqual(s.charged, []);
+
+  // Paid, but no webhook came: the next status check confirms it, once.
+  s.stripe.authorized = signed.quote.total;
+  const done = await check();
+  assert.equal(done.status, 'confirmed');
+  assert.match(done.bookingId, /^AC-/);
+  assert.deepEqual(s.charged, [`pi_${holdId}`]);
+  assert.equal(s.mails.length, 1);
+  assert.equal((await check()).status, 'confirmed');
+  assert.equal(s.mails.length, 1);
+  assert.equal(s.alerts.length, 1);
+});
+
+test('the status check does not book a hold whose authorised amount is not the quoted total', async () => {
+  const s = setup();
+  const quote = await s.call('POST', '/api/quote', { body: { homeId: home.id, checkIn: '2026-11-09', checkOut: '2026-11-12', guests: 4 } });
+  const signed: SignedQuote = JSON.parse(quote.body).signed;
+  const { holdId } = JSON.parse((await s.call('POST', '/api/reserve', { body: { signed, guest } })).body);
+  s.stripe.authorized = signed.quote.total - 100;
+  const status = JSON.parse((await s.call('GET', '/api/hold', { query: { id: holdId } })).body);
+  assert.notEqual(status.status, 'confirmed');
+  assert.deepEqual(s.charged, []);
 });
